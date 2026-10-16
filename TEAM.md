@@ -18,7 +18,7 @@
 | Moji Idowu | Interaction Designer | In person |  |
 | Gavin Woods | Content Designer | In person | Yes |
 
-The **squad lead** runs the squad's setup before the day: agreeing the two roles and getting everyone into the Teams channel. They're the product owner unless the squad agrees otherwise.
+The **squad lead** runs the squad's setup before the day: agreeing the two roles and getting everyone into the Teams chat. They're the product owner unless the squad agrees otherwise.
 
 ## Roles
 
