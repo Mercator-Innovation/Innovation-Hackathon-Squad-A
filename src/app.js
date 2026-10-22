@@ -13,6 +13,9 @@ const App = {
 
     this.state = this.load() || this.freshState();
     if (!this.state.homes) this.state.homes = this.startingHomes(); // demo saved before homes could be edited
+    this.state.homes.forEach((home) => { // demo saved before sensor readings were added
+      if (!("sensor" in home)) home.sensor = (DATA.homes.find((h) => h.id === home.id) || {}).sensor || null;
+    });
 
     document.querySelectorAll("[data-view]").forEach((btn) => {
       btn.addEventListener("click", () => this.showView(btn.dataset.view));
