@@ -4,7 +4,7 @@ Things to improve in the prototype. Pick one, build it, then `/share` it. Put yo
 
 ## Tenant side
 
-1. Notifications when there's a new message or update
+1. Notifications when there's a new message or update: done, as Updates on the tenant's home screen (Moji Idowu)
 2. More questions in the report, including:
    - how long the damp or mould has been there
    - what it looks like (black spots, water on windows, peeling or bubbling paint)
@@ -23,5 +23,5 @@ Numbers 7 and 8 change the same page, so one person should build them together.
 
 ## Both
 
-9. A page or tab explaining how the assessment works and how the score is worked out: head office part done, as "How the ranking works" (Gavin Woods)
+9. A page or tab explaining how the assessment works and how the score is worked out: head office part done, as "How the ranking works" (Gavin Woods); tenant part done, as "How we decide who to visit first" (Moji Idowu)
 10. Fix accessibility, including the scrolling problem at phone width (Dharmendra Patel: done)
