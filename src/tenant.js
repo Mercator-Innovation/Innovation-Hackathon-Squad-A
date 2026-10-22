@@ -317,7 +317,7 @@ const Tenant = {
 
   // What the housing officer found: a short summary first, then the full report for anyone who wants it.
   foundHtml(t, r) {
-    const f = DATA.findings[r.ref] || DATA.findings.default;
+    const f = r.findings || DATA.findings[r.ref] || DATA.findings.default; // what the housing officer recorded, if they have
     const row = (label, value) => `<dt>${esc(label)}</dt><dd>${esc(value)}</dd>`;
     return `
       <section class="card found" aria-labelledby="found-title">

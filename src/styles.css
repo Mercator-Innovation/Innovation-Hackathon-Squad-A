@@ -277,3 +277,24 @@ input[type="search"] {
 .demo-panel { margin-top: 1rem; }
 .demo-panel summary { cursor: pointer; color: var(--brand-dark); text-decoration: underline; font-weight: 600; }
 .demo-panel[open] { border-left: 4px solid var(--brand); padding-left: 0.75rem; }
+
+/* Housing officer */
+.inline-select { max-width: 24rem; }
+.assignment-list { list-style: none; margin: 0 0 var(--gap); padding: 0; display: grid; gap: var(--gap); }
+@media (min-width: 800px) { .assignment-list { grid-template-columns: repeat(2, 1fr); } }
+.assignment { margin: 0; }
+.assignment h3 { margin: 0; font-size: 1.125rem; }
+.assignment p { margin-bottom: 0.4rem; }
+.officer-deadline { border-left: 5px solid var(--border); padding-left: 0.5rem; }
+.officer-deadline.soon { border-color: var(--medium); }
+.officer-deadline.overdue { border-color: var(--high); color: var(--high); }
+.done-list { margin-top: 1rem; }
+.done-list summary { font-weight: 700; cursor: pointer; margin-bottom: var(--gap); }
+.form-section { border: 0; border-top: 1px solid var(--border); padding: 1rem 0 0; margin: 0 0 1rem; min-width: 0; }
+.form-section > legend { font-weight: 700; font-size: 1.125rem; padding: 0; float: left; width: 100%; margin-bottom: 0.5rem; }
+.form-section > legend + * { clear: both; }
+.conditional { border-left: 4px solid var(--border); padding-left: 1rem; margin: 0.5rem 0 0 0.6rem; }
+.notes { list-style: none; padding: 0; margin: 1rem 0 0; }
+.notes li { border-top: 1px solid var(--border); padding: 0.5rem 0; }
+.notes li p { margin-bottom: 0.25rem; }
+#officer-view .record-head .badge { flex-shrink: 0; }
