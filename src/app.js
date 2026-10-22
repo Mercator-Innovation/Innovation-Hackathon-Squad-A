@@ -19,6 +19,8 @@ const App = {
     const removed = this.state.removedRefs || []; // example reports taken out on purpose, for example by the demo controls
     DATA.reports.forEach((report) => { // example reports added after this demo was saved
       if (!removed.includes(report.ref) && !this.state.reports.some((r) => r.ref === report.ref)) this.state.reports.push(JSON.parse(JSON.stringify(report)));
+      const saved = this.state.reports.find((r) => r.ref === report.ref); // example photos added after this demo was saved
+      if (saved && report.photos && !(saved.photos || []).length) saved.photos = report.photos.slice();
     });
 
     document.querySelectorAll("[data-view]").forEach((btn) => {
