@@ -7,7 +7,7 @@ const Office = {
   render() {
     const o = CONTENT.office;
     const el = document.getElementById("office-screen");
-    const ranked = DATA.homes
+    const ranked = App.state.homes
       .map((home) => ({ home, risk: Risk.score(home), report: App.openReport(home.id) }))
       .sort((a, b) => b.risk.total - a.risk.total);
     const shown = this.filter === "high" ? ranked.filter((r) => r.risk.band === "high") : ranked;

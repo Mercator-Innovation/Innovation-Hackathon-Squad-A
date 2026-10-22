@@ -12,6 +12,7 @@ const App = {
     document.getElementById("prototype-banner").textContent = CONTENT.banner;
 
     this.state = this.load() || this.freshState();
+    if (!this.state.homes) this.state.homes = this.startingHomes(); // demo saved before homes could be edited
 
     document.querySelectorAll("[data-view]").forEach((btn) => {
       btn.addEventListener("click", () => this.showView(btn.dataset.view));
@@ -28,10 +29,19 @@ const App = {
   freshState() {
     return {
       view: "tenant",
+      homes: this.startingHomes(),
       reports: JSON.parse(JSON.stringify(DATA.reports)),
       nextRef: 2045,
       promptAnswered: false
     };
+  },
+
+  // Homes live in the saved state so head office can add, change and delete them.
+  startingHomes() {
+    return DATA.homes.map((home) => ({
+      ...JSON.parse(JSON.stringify(home)),
+      tenant: TENANTS[home.id] ? { ...TENANTS[home.id] } : null
+    }));
   },
 
   load() {
@@ -58,8 +68,9 @@ const App = {
     document.querySelectorAll("[data-view]").forEach((btn) => {
       btn.setAttribute("aria-pressed", String(btn.dataset.view === name));
     });
-    document.getElementById("tenant-view").hidden = name !== "tenant";
-    document.getElementById("office-view").hidden = name !== "office";
+    document.querySelectorAll(".view").forEach((section) => {
+      section.hidden = section.id !== `${name}-view`;
+    });
     this.save();
   },
 
@@ -68,7 +79,7 @@ const App = {
   },
 
   home(id) {
-    return DATA.homes.find((h) => h.id === id);
+    return this.state.homes.find((h) => h.id === id);
   },
 
   reportsFor(homeId) {
