@@ -7,11 +7,11 @@ const Demo = {
     const you = DATA.you;
     return [
       { ref: "DM-3104", homeId: you, date: todayIso(-1), rooms: ["Kitchen"], severity: "small", health: "skip",
-        note: "", status: "received", seen: false, tenantSeen: "received" },
+        note: "", status: "received", seen: false, tenantSeen: "received", photos: [SAMPLE_PHOTOS.window] },
       { ref: "DM-3103", homeId: you, date: todayIso(-5), rooms: ["Bedroom", "Hall"], severity: "medium", health: "skip",
         note: "", status: "visit", officer: "Callum Fraser", visitDate: addWorkingDays(todayIso(), 2), seen: true, tenantSeen: "received" },
       { ref: "DM-3102", homeId: you, date: todayIso(-12), rooms: ["Bathroom"], severity: "medium", health: "skip",
-        note: "Mould round the window.", status: "repair", officer: "Priya Nair", visitDate: todayIso(-8),
+        note: "Mould round the window.", photos: [SAMPLE_PHOTOS.window, SAMPLE_PHOTOS.corner], status: "repair", officer: "Priya Nair", visitDate: todayIso(-8),
         summarySent: todayIso(-7), repairStarted: todayIso(-6), seen: true, tenantSeen: "visit" },
       { ref: "DM-1962", homeId: you, date: "2026-03-04", rooms: ["Bedroom"], severity: "small", health: "skip",
         note: "", status: "fixed", officer: "Ewa Kowalska", visitDate: "2026-03-10", fixedDate: "2026-03-27", seen: true, tenantSeen: "fixed" }
