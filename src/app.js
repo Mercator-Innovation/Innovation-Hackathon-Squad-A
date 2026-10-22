@@ -89,11 +89,13 @@ const Risk = {
     const reasons = [];
     const add = (points, text) => reasons.push({ points, text });
 
-    const report = App.openReport(home.id);
+    // Score the worst open report, so a newer small report can't hide an older big one.
+    const sizes = { small: 15, medium: 25, large: 35 };
+    const open = App.reportsFor(home.id).filter((r) => r.status !== "fixed");
+    const report = open.sort((a, b) => sizes[b.severity] - sizes[a.severity])[0];
     if (report) {
-      const sizes = { small: 15, medium: 25, large: 35 };
       add(sizes[report.severity], `Tenant reported ${report.severity === "large" ? "a lot of" : "some"} damp or mould`);
-      if (report.health === "yes") add(15, "Tenant says someone has breathing problems");
+      if (open.some((r) => r.health === "yes")) add(15, "Tenant says someone has breathing problems");
     } else if (home.household.breathingCondition) {
       add(10, "Tenant has told us about breathing problems");
     }
@@ -101,7 +103,9 @@ const Risk = {
     const epcPoints = { D: 8, E: 15, F: 20, G: 25 };
     if (epcPoints[home.epc]) add(epcPoints[home.epc], `Energy rating ${home.epc}: harder to keep warm`);
     if (home.dampRepairs > 0) add(Math.min(home.dampRepairs * 8, 24), `${home.dampRepairs} damp repair${home.dampRepairs > 1 ? "s" : ""} in the last 2 years`);
-    if (home.humidity !== null && home.humidity >= 70) add(15, `Sensor shows high humidity (${home.humidity}%)`);
+    const sensor = home.sensor;
+    if (sensor && sensor.coldDays > 0) add(Math.round(20 * sensor.coldDays / sensor.days), `Sensor: below 18°C on ${sensor.coldDays} of the last ${sensor.days} days`);
+    if (sensor && sensor.dampDays > 0) add(Math.round(20 * sensor.dampDays / sensor.days), `Sensor: humidity above 70% on ${sensor.dampDays} of the last ${sensor.days} days`);
     if (home.household.olderPerson) add(10, "Older person lives here");
     if (home.household.youngChild) add(10, "Young child lives here");
     if (home.lastContactDays > 365) add(10, `No contact for over a year`);

@@ -3,6 +3,7 @@
 const Office = {
   filter: "all",
   openHomeId: null,
+  dateError: false,
 
   render() {
     const o = CONTENT.office;
@@ -86,14 +87,16 @@ const Office = {
     if (report && report.status === "received") {
       actions = `
         <h3>${esc(o.assignTitle)}</h3>
-        <form id="assign-form">
+        <form id="assign-form" novalidate>
           <div class="field">
             <label for="officer">${esc(o.officerLabel)}</label>
             <select id="officer">${DATA.officers.map((n) => `<option>${esc(n)}</option>`).join("")}</select>
           </div>
-          <div class="field">
+          <div class="field ${this.dateError ? "has-error" : ""}">
             <label for="visit-date">${esc(o.dateLabel)}</label>
-            <input type="date" id="visit-date" value="${todayIso(risk.band === "high" ? 1 : 5)}">
+            ${this.dateError ? `<p class="error" id="visit-date-error"><span class="visually-hidden">Error: </span>${esc(o.dateError)}</p>` : ""}
+            <input type="date" id="visit-date" required min="${todayIso()}" value="${this.dateError ? esc(this.dateValue) : todayIso(risk.band === "high" ? 1 : 5)}"
+              ${this.dateError ? 'aria-invalid="true" aria-describedby="visit-date-error"' : ""}>
           </div>
           <button type="submit" class="button">${esc(o.assignButton)}</button>
         </form>`;
@@ -116,6 +119,11 @@ const Office = {
         <h3>${esc(o.household)}</h3>
         <p>${esc(home.type)}, energy rating ${esc(home.epc)}. ${esc(facts)}.</p>
         <p class="hint">${esc(o.consentNote)}</p>
+        <h3>${esc(o.sensorTitle)}</h3>
+        <p>${home.sensor ? esc(o.sensorText
+          .replaceAll("{cold}", home.sensor.coldDays).replaceAll("{damp}", home.sensor.dampDays)
+          .replaceAll("{days}", home.sensor.days).replaceAll("{temp}", home.sensor.avgTemp)
+          .replaceAll("{humidity}", home.sensor.avgHumidity)) : `<span class="muted">${esc(o.noSensor)}</span>`}</p>
         ${report ? `<h3>${esc(o.reports)}</h3>
           <p>${esc(report.ref)}: ${esc(report.rooms.join(", "))} · ${esc(formatDate(report.date))}${report.note ? `<br>“${esc(report.note)}”` : ""}</p>` : ""}
         ${actions}
@@ -130,6 +138,7 @@ const Office = {
     });
     el.querySelectorAll("[data-review]").forEach((btn) => btn.addEventListener("click", () => {
       this.openHomeId = btn.dataset.review;
+      this.dateError = false;
       const report = App.openReport(this.openHomeId);
       if (report) report.seen = true;
       App.save();
@@ -140,20 +149,38 @@ const Office = {
       App.save();
     }));
     const close = el.querySelector("[data-close]");
-    if (close) close.addEventListener("click", () => { this.openHomeId = null; this.render(); });
+    if (close) close.addEventListener("click", () => {
+      const homeId = this.openHomeId;
+      this.openHomeId = null;
+      this.render();
+      // Put keyboard focus back on the Review button the person came from.
+      const back = document.querySelector(`#office-screen table [data-review="${homeId}"]`);
+      if (back) back.focus();
+    });
 
     const report = this.openHomeId && App.openReport(this.openHomeId);
     const assign = el.querySelector("#assign-form");
     if (assign) assign.addEventListener("submit", (ev) => {
       ev.preventDefault();
+      const date = document.getElementById("visit-date").value;
+      if (!date || date < todayIso()) {
+        this.dateError = true;
+        this.dateValue = date; // keep what they typed, so they can see what was wrong
+        this.render();
+        document.getElementById("visit-date").focus();
+        return;
+      }
+      this.dateError = false;
       report.status = "visit";
       report.officer = document.getElementById("officer").value;
       report.visitDate = document.getElementById("visit-date").value;
       App.save();
+      document.getElementById("detail-title").focus(); // redrawing loses focus, so keep the person in the panel
     });
     el.querySelectorAll("[data-progress]").forEach((btn) => btn.addEventListener("click", () => {
       report.status = btn.dataset.progress;
       App.save();
+      document.getElementById("detail-title").focus();
     }));
   }
 };
