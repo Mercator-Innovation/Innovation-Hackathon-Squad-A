@@ -38,7 +38,8 @@ window.DATA = {
   // Reports already in the system when the demo starts.
   reports: [
     { ref: "DM-2041", homeId: "H-101", date: "2026-10-20", rooms: ["Bedroom", "Bathroom"], severity: "large", health: "yes",
-      note: "Black mould behind the cot.", status: "received", seen: false },
+      note: "Black mould behind the cot.", status: "received", seen: false,
+      photos: [SAMPLE_PHOTOS.corner, SAMPLE_PHOTOS.patch] },
     { ref: "DM-2038", homeId: "H-106", date: "2026-10-14", rooms: ["Kitchen"], severity: "medium", health: "yes",
       note: "", status: "visit", officer: "Jamie Rennie", visitDate: "2026-10-24", seen: true },
     { ref: "DM-2033", homeId: "H-110", date: "2026-10-02", rooms: ["Bathroom"], severity: "small", health: "yes",
@@ -49,7 +50,7 @@ window.DATA = {
     { ref: "DM-1962", homeId: "H-104", date: "2026-03-04", rooms: ["Bedroom"], severity: "small", health: "skip",
       note: "", status: "fixed", officer: "Ewa Kowalska", visitDate: "2026-03-10", fixedDate: "2026-03-27", seen: true, tenantSeen: "fixed" },
     { ref: "DM-2044", homeId: "H-108", date: "2026-10-21", rooms: ["Living room", "Hall"], severity: "medium", health: "skip",
-      note: "", status: "received", seen: false }
+      note: "", status: "received", seen: false, photos: [SAMPLE_PHOTOS.window] }
   ],
 
   officers: ["Jamie Rennie", "Priya Nair", "Callum Fraser", "Ewa Kowalska"],
