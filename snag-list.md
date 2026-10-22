@@ -13,7 +13,7 @@ Things to improve in the prototype. Pick one, build it, then `/share` it. Put yo
 ## Head office side
 
 4. Add, view, edit and delete tenants and properties (Nicholas Davey)
-5. Make the assessment follow Awaab's Law (Antony Angeli: deadlines added to head office)
+5. Make the assessment follow Awaab's Law (find out what it requires first)
 6. Make the visit times you can book depend on the risk rating (for example, higher-risk homes get earlier visits)
 7. Add an "Assigned to" column to the homes list
 8. Add filtering and sorting to the "Homes by risk" page
