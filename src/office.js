@@ -34,6 +34,7 @@ const Office = {
                 <th scope="col">${esc(o.cols.risk)}</th>
                 <th scope="col">${esc(o.cols.why)}</th>
                 <th scope="col">${esc(o.cols.status)}</th>
+                <th scope="col">${esc(o.cols.deadline)}</th>
                 <th scope="col"><span class="visually-hidden">Actions</span></th>
               </tr></thead>
               <tbody>
@@ -44,6 +45,7 @@ const Office = {
                     <td><span class="badge ${row.risk.band}">${esc(o.bands[row.risk.band])}</span> <span class="score">${row.risk.total}</span></td>
                     <td class="why">${esc(row.risk.reasons.slice(0, 2).map((r) => r.text).join("; "))}</td>
                     <td>${row.report ? esc(CONTENT.tenant.statusSteps[row.report.status]) : `<span class="muted">${esc(o.noStatus)}</span>`}</td>
+                    <td>${row.report ? this.deadlineHtml(o.awaab, row.report) : ""}</td>
                     <td><button type="button" class="button small" data-review="${row.home.id}">${esc(o.review)}<span class="visually-hidden"> ${esc(row.home.address)}</span></button></td>
                   </tr>`).join("")}
               </tbody>
@@ -71,6 +73,37 @@ const Office = {
       </section>`;
   },
 
+  // The next Awaab's Law step for the list: what's due, when, and how long is left.
+  deadlineHtml(a, report) {
+    if (!Awaab.covered(report)) return `<span class="muted">${esc(a.notCovered)}</span>`;
+    const next = Awaab.steps(report).next;
+    if (!next) return esc(a.allDone);
+    return `${esc(a.by.replace("{step}", a.steps[next.key]).replace("{date}", shortDate(next.due)))}<br>${this.leftHtml(a, next.left)}`;
+  },
+
+  leftHtml(a, left) {
+    if (left < 0) return `<span class="badge high">${esc(a.overdue)}</span> <span class="score">${esc(left === -1 ? a.overdueByOne : a.overdueBy.replace("{n}", -left))}</span>`;
+    if (left === 0) return `<span class="badge medium">${esc(a.dueToday)}</span>`;
+    return `<span class="score">${esc(left === 1 ? a.leftOne : a.left.replace("{n}", left))}</span>`;
+  },
+
+  // Every step for one report, so head office can see the whole clock.
+  awaabHtml(a, report) {
+    if (!Awaab.covered(report)) return `<h3>${esc(a.title)}</h3><p class="muted">${esc(a.notCovered)}</p>`;
+    const { steps, next } = Awaab.steps(report);
+    return `
+      <h3>${esc(a.title)}</h3>
+      <p class="hint">${esc(a.intro)}</p>
+      <ul class="deadlines">${steps.map((s) => `
+        <li class="${s.done ? "done" : s === next ? "next" : ""}">
+          <strong>${esc(a.steps[s.key])}</strong>:
+          ${s.done ? esc(s.doneOn ? a.done.replace("{date}", shortDate(s.doneOn)) : a.doneNoDate)
+            : s.due ? `by ${esc(shortDate(s.due))}${s === next ? ` · ${this.leftHtml(a, s.left)}` : ""}`
+            : `<span class="muted">${esc(a.notYet)}</span>`}
+        </li>`).join("")}</ul>
+      <p class="hint">${esc(a.source)}</p>`;
+  },
+
   detailHtml(o) {
     const home = App.home(this.openHomeId);
     const risk = Risk.score(home);
@@ -85,6 +118,11 @@ const Office = {
 
     let actions = "";
     if (report && report.status === "received") {
+      const covered = Awaab.covered(report);
+      const deadline = Awaab.steps(report).steps[0].due;
+      let visitDate = todayIso(risk.band === "high" ? 1 : 5);
+      if (covered && visitDate > deadline) visitDate = deadline < todayIso() ? todayIso() : deadline;
+      if (this.dateError) visitDate = this.dateValue;
       actions = `
         <h3>${esc(o.assignTitle)}</h3>
         <form id="assign-form" novalidate>
@@ -94,9 +132,12 @@ const Office = {
           </div>
           <div class="field ${this.dateError ? "has-error" : ""}">
             <label for="visit-date">${esc(o.dateLabel)}</label>
+            ${covered ? `<p class="hint" id="visit-date-hint">${esc(o.awaab.visitHint.replace("{date}", formatDate(deadline)))}</p>` : ""}
             ${this.dateError ? `<p class="error" id="visit-date-error"><span class="visually-hidden">Error: </span>${esc(o.dateError)}</p>` : ""}
-            <input type="date" id="visit-date" required min="${todayIso()}" value="${this.dateError ? esc(this.dateValue) : todayIso(risk.band === "high" ? 1 : 5)}"
-              ${this.dateError ? 'aria-invalid="true" aria-describedby="visit-date-error"' : ""}>
+            <input type="date" id="visit-date" required min="${todayIso()}" value="${esc(visitDate)}"
+              aria-describedby="${[covered && "visit-date-hint", this.dateError && "visit-date-error", "visit-date-late"].filter(Boolean).join(" ")}"
+              ${this.dateError ? 'aria-invalid="true"' : ""}>
+            <p class="warning" id="visit-date-late" aria-live="polite">${covered && visitDate > deadline ? esc(o.awaab.lateWarning) : ""}</p>
           </div>
           <button type="submit" class="button">${esc(o.assignButton)}</button>
         </form>`;
@@ -126,6 +167,7 @@ const Office = {
           .replaceAll("{humidity}", home.sensor.avgHumidity)) : `<span class="muted">${esc(o.noSensor)}</span>`}</p>
         ${report ? `<h3>${esc(o.reports)}</h3>
           <p>${esc(report.ref)}: ${esc(report.rooms.join(", "))} · ${esc(formatDate(report.date))}${report.note ? `<br>“${esc(report.note)}”` : ""}</p>` : ""}
+        ${report ? this.awaabHtml(o.awaab, report) : ""}
         ${actions}
       </section>`;
   },
@@ -159,6 +201,11 @@ const Office = {
     });
 
     const report = this.openHomeId && App.openReport(this.openHomeId);
+    const visitInput = el.querySelector("#visit-date");
+    if (visitInput && report && Awaab.covered(report)) visitInput.addEventListener("input", () => {
+      const late = visitInput.value > Awaab.steps(report).steps[0].due;
+      document.getElementById("visit-date-late").textContent = late ? CONTENT.office.awaab.lateWarning : "";
+    });
     const assign = el.querySelector("#assign-form");
     if (assign) assign.addEventListener("submit", (ev) => {
       ev.preventDefault();
@@ -179,6 +226,7 @@ const Office = {
     });
     el.querySelectorAll("[data-progress]").forEach((btn) => btn.addEventListener("click", () => {
       report.status = btn.dataset.progress;
+      if (report.status === "repair") report.repairStarted = todayIso(); // starts the 20-working-day repair clock
       App.save();
       document.getElementById("detail-title").focus();
     }));

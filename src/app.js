@@ -132,6 +132,64 @@ const Risk = {
   }
 };
 
+// Awaab's Law (Scotland), in force from 6 October 2026. For each report the
+// landlord must investigate within 10 working days, send the tenant a written
+// summary within 3 working days of that, start repairs within 5 working days
+// of that, and finish them within 20 working days of starting.
+// Source: gov.scot/publications/awaabs-law-guidance-landlords-scotland
+// Working days here skip weekends but not bank holidays.
+const Awaab = {
+  startDate: "2026-10-06",
+  days: { investigate: 10, summary: 3, startRepair: 5, finishRepair: 20 },
+
+  covered(report) {
+    return report.date >= this.startDate;
+  },
+
+  // Each step with its due date, whether it's done, and which one is next.
+  steps(report) {
+    const today = todayIso();
+    const investigated = report.status === "repair" || report.status === "fixed" ||
+      (report.status === "visit" && report.visitDate <= today);
+    const repairStarted = report.status === "repair" || report.status === "fixed";
+    const invDate = investigated ? report.visitDate : null;
+    const startDate = repairStarted ? (report.repairStarted || report.visitDate) : null;
+
+    const steps = [
+      { key: "investigate", due: addWorkingDays(report.date, this.days.investigate), done: investigated, doneOn: invDate },
+      { key: "summary", due: invDate && addWorkingDays(invDate, this.days.summary), done: investigated, doneOn: invDate },
+      { key: "startRepair", due: invDate && addWorkingDays(invDate, this.days.startRepair), done: repairStarted, doneOn: startDate },
+      { key: "finishRepair", due: startDate && addWorkingDays(startDate, this.days.finishRepair), done: report.status === "fixed" }
+    ];
+    // The written summary goes out with the visit in this demo, so the next step skips it.
+    const next = steps.find((s) => !s.done && s.key !== "summary") || null;
+    if (next) next.left = workingDaysBetween(today, next.due);
+    return { steps, next };
+  }
+};
+
+function addWorkingDays(iso, n) {
+  const d = new Date(iso + "T12:00:00");
+  while (n > 0) {
+    d.setDate(d.getDate() + 1);
+    if (d.getDay() !== 0 && d.getDay() !== 6) n--;
+  }
+  return d.toISOString().slice(0, 10);
+}
+
+// Working days from one date to another: negative when the second is in the past.
+function workingDaysBetween(fromIso, toIso) {
+  const sign = toIso >= fromIso ? 1 : -1;
+  const [a, b] = sign > 0 ? [fromIso, toIso] : [toIso, fromIso];
+  let count = 0;
+  const d = new Date(a + "T12:00:00");
+  while (d.toISOString().slice(0, 10) < b) {
+    d.setDate(d.getDate() + 1);
+    if (d.getDay() !== 0 && d.getDay() !== 6) count++;
+  }
+  return sign * count;
+}
+
 // Small helpers used by both views.
 function esc(text) {
   return String(text ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));

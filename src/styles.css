@@ -157,6 +157,12 @@ td.why { color: var(--muted); max-width: 22rem; }
 .badge.medium { background: var(--medium); }
 .badge.low { background: var(--low); }
 .score { color: var(--muted); font-size: 0.9rem; }
+.deadlines { list-style: none; padding: 0; margin: 0 0 0.5rem; }
+.deadlines li { padding: 0.35rem 0 0.35rem 0.75rem; border-left: 4px solid var(--border); margin-bottom: 0.25rem; }
+.deadlines li.done { border-left-color: var(--success); }
+.deadlines li.next { border-left-color: var(--brand); background: var(--bg); }
+.warning { color: var(--medium); font-weight: 600; margin: 0.35rem 0 0; }
+.warning:empty { display: none; }
 
 .detail-head { display: flex; justify-content: space-between; align-items: baseline; gap: 0.5rem; }
 .reasons { list-style: none; padding: 0; margin: 0; }
