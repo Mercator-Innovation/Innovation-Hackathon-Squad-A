@@ -3,6 +3,12 @@
 // timeline of every damp and mould report, check and repair); and a form to add or change one.
 // It's a section of the head office view, next to "Homes at risk". OfficeTabs switches between them.
 
+// The tenant's preferred way to hear from Cloch. Tenants saved before this existed get one
+// worked out from what we knew: the app if they opted in, otherwise a text if we have a phone number.
+function contactOf(tenant) {
+  return tenant.contact || (tenant.appOptIn ? "app" : tenant.phone ? "text" : "letter");
+}
+
 const OfficeTabs = {
   start() {
     document.querySelectorAll("[data-office-tab]").forEach((btn) => btn.addEventListener("click", () => {
@@ -61,7 +67,7 @@ const Properties = {
     };
     const shown = App.state.homes.filter((h) => {
       const text = [h.address, h.tenant && h.tenant.name, h.tenant && h.tenant.phone].filter(Boolean).join(" ").toLowerCase();
-      const appState = !h.tenant ? "empty" : h.tenant.appOptIn ? "in" : "out";
+      const appState = !h.tenant ? "empty" : contactOf(h.tenant);
       return words.every((w) => text.includes(w) || text.replace(/\s/g, "").includes(w)) &&
         (f.town === "all" || townOf(h) === f.town) &&
         (f.app === "all" || appState === f.app) &&
@@ -97,7 +103,7 @@ const Properties = {
       <fieldset class="filters">
         <legend>${esc(o.filtersTitle)}</legend>
         ${select("prop-filter-town", o.filterTown, f.town, [["all", o.any], ...towns.map((t) => [t, t])])}
-        ${select("prop-filter-app", p.filterApp, f.app, [["all", o.any], ["in", p.optedIn], ["out", p.optedOut], ["empty", p.filterEmpty]])}
+        ${select("prop-filter-app", p.filterApp, f.app, [["all", o.any], ...p.contactOptions.map((c) => [c.value, c.label]), ["empty", p.filterEmpty]])}
         ${select("prop-filter-epc", p.epcLabel, f.epc, [["all", o.any], ["good", p.epcGood], ["middle", "D"], ["poor", p.epcPoor]])}
         ${select("prop-filter-lives", p.filterLives, f.lives, [["all", o.any], ...p.ageRanges.map((r) => [r.key, p.someoneAged.replace("{range}", r.label)]), ["breathing", p.breathingShort], ["sight", p.sightShort]])}
         ${select("prop-sort", o.sortLabel, this.sort, [["address", o.sortAddress], ["tenant", p.sortTenant], ["latest", p.sortLatest]])}
@@ -144,8 +150,10 @@ const Properties = {
       </section>`;
   },
 
+  // How the tenant prefers us to get in touch.
   appTag(p, tenant) {
-    return `<span class="tag ${tenant.appOptIn ? "in" : "out"}">${esc(tenant.appOptIn ? p.optedIn : p.optedOut)}</span>`;
+    const c = p.contactOptions.find((o) => o.value === contactOf(tenant));
+    return `<span class="tag contact">${esc(c ? c.label : "")}</span>`;
   },
 
   // ---------- One property's record ----------
@@ -165,7 +173,7 @@ const Properties = {
       row(p.agesShort, esc(agesText(home))),
       row(p.breathingShort, esc(yesNoUnknown(hh.breathingCondition))),
       row(p.sightShort, esc(yesNoUnknown(t.sightLoss))),
-      row(p.appLabel, this.appTag(p, t))
+      row(p.contactLabel, this.appTag(p, t))
     ].join("") : "";
 
     const events = this.timeline(home);
@@ -226,6 +234,7 @@ const Properties = {
         <h4>${esc(e.title)}</h4>
         ${e.detail ? `<p>${esc(e.detail)}</p>` : ""}
         ${e.outcome ? `<p><strong>${esc(p.outcomeLabel)}:</strong> ${esc(e.outcome)}</p>` : ""}
+        ${e.photos && e.photos.length ? `<div class="photo-previews">${e.photos.map((src, i) => `<img src="${src}" alt="Tenant's photo ${i + 1} of the damp or mould">`).join("")}</div>` : ""}
       </li>`;
   },
 
@@ -238,7 +247,7 @@ const Properties = {
       const items = [{
         date: r.date, type: "report", title: `Tenant reported damp or mould (${r.ref})`, by: home.tenant ? home.tenant.name : "",
         detail: `${r.rooms.join(", ")}: ${sizes[r.severity] || r.severity}.${r.note ? ` “${r.note}”` : ""}`,
-        outcome: o.statusSteps[r.status]
+        outcome: o.statusSteps[r.status], photos: r.photos || []
       }];
       if (r.visitDate) items.push({
         date: r.visitDate, type: "inspection", title: `Housing officer visit for ${r.ref}`, by: r.officer,
@@ -311,7 +320,7 @@ const Properties = {
     if (this.draft) return this.draft;
     if (!home) {
       return { address: "", type: "Flat", epc: "D", dampRepairs: 0, name: "", age: "", phone: "", ages: {},
-        breathing: "unknown", sight: "unknown", app: "out" };
+        breathing: "unknown", sight: "unknown", app: "text" };
     }
     const hh = home.household;
     const t = home.tenant;
@@ -321,7 +330,7 @@ const Properties = {
       name: t ? t.name : "", age: t && t.age ? String(t.age) : "", phone: t ? t.phone : "",
       ages: Object.fromEntries(Object.entries(agesOf(home)).map(([k, n]) => [k, n > 0 ? String(n) : ""])),
       breathing: tri(hh.breathingCondition), sight: tri(t ? t.sightLoss : null),
-      app: t && t.appOptIn ? "in" : "out"
+      app: t ? contactOf(t) : "text"
     };
   },
 
@@ -407,9 +416,9 @@ const Properties = {
               ${radios("prop-sight", p.breathingOptions, v.sight)}
             </fieldset>
             <fieldset class="field">
-              <legend>${esc(p.appLabel)}</legend>
-              <p class="hint">${esc(p.appHint)}</p>
-              ${radios("prop-app", p.appOptions, v.app)}
+              <legend>${esc(p.contactLabel)}</legend>
+              <p class="hint">${esc(p.contactHint)}</p>
+              ${radios("prop-app", p.contactOptions, v.app)}
             </fieldset>
           </section>
         </div>
@@ -430,7 +439,7 @@ const Properties = {
       ages: Object.fromEntries([...document.querySelectorAll("[data-age-range]")].map((box) => [box.dataset.ageRange, box.value.trim()])),
       breathing: checked("prop-breathing") || "unknown",
       sight: checked("prop-sight") || "unknown",
-      app: checked("prop-app") || "out"
+      app: checked("prop-app") || "text"
     };
   },
 
@@ -452,7 +461,7 @@ const Properties = {
       ? householdFromAges(v.ages, fromTri(v.breathing))
       : emptyHousehold();
     const tenant = hasTenant
-      ? { name: v.name, age: v.age ? Number(v.age) : null, sightLoss: fromTri(v.sight), phone: v.phone, appOptIn: v.app === "in" }
+      ? { name: v.name, age: v.age ? Number(v.age) : null, sightLoss: fromTri(v.sight), phone: v.phone, contact: v.app, appOptIn: v.app === "app" }
       : null;
 
     if (this.currentId === "new") {
