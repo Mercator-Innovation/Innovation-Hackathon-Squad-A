@@ -16,6 +16,7 @@
         <ul class="view-switch">
           <li><button type="button" data-view="tenant" aria-pressed="true">Tenant's phone</button></li>
           <li><button type="button" data-view="office" aria-pressed="false">Cloch head office</button></li>
+          <li><button type="button" data-view="officer" aria-pressed="false">Housing officer</button></li>
         </ul>
       </nav>
     </div>
@@ -46,6 +47,12 @@
       <!-- Properties and tenants: properties.js fills this in -->
       <div id="properties-screen" hidden></div>
     </section>
+
+    <!-- Housing officer view: officer.js fills this in -->
+    <section id="officer-view" class="view" aria-labelledby="officer-view-title" hidden>
+      <h1 id="officer-view-title">Housing officer</h1>
+      <div id="officer-screen"></div>
+    </section>
   </main>
 
   <footer class="site-footer wrap">
@@ -59,10 +66,12 @@
   <script src="data/homes.js"></script>
   <script src="data/tenants.js"></script>
   <script src="data/history.js"></script>
+  <script src="data/assignments.js"></script>
   <script src="app.js"></script>
   <script src="tenant.js"></script>
   <script src="office.js"></script>
   <script src="properties.js"></script>
+  <script src="officer.js"></script>
   <script src="demo.js"></script>
   <script>App.start();</script>
 </body>

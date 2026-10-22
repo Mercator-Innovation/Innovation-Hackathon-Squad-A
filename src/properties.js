@@ -251,7 +251,14 @@ const Properties = {
       }];
       if (r.visitDate) items.push({
         date: r.visitDate, type: "inspection", title: `Housing officer visit for ${r.ref}`, by: r.officer,
-        detail: "", outcome: r.status === "visit" ? "Booked" : "Visited"
+        detail: r.findings ? [r.findings.cause, r.findings.mould, r.findings.summary].filter(Boolean).join(". ") : "",
+        outcome: r.findings ? r.findings.outcome : r.visitDate > todayIso() ? "Booked" : "Visited"
+      });
+      // Repairs recorded by the housing officer
+      if (r.repairNeeded === "yes" && (r.repairStarted || r.repairBooked)) items.push({
+        date: r.repairStarted || r.repairBooked, type: "repair", title: `Repair for ${r.ref}`, by: r.officer,
+        detail: ((r.findings && r.findings.plan) || []).join(". "),
+        outcome: r.status === "fixed" ? `Carried out ${shortDate(r.fixedDate)}` : r.repairStarted ? "Started" : "Booked"
       });
       return items;
     });
