@@ -32,6 +32,40 @@ window.CONTENT = {
       { value: "no", label: "No" },
       { value: "skip", label: "I'd rather not say" }
     ],
+    howLongLabel: "How long has it been there?",
+    howLongOptions: [
+      { value: "month", label: "Less than a month" },
+      { value: "months", label: "1 to 6 months" },
+      { value: "longer", label: "More than 6 months" },
+      { value: "unsure", label: "I'm not sure" }
+    ],
+    looksLabel: "What does it look like?",
+    looksHint: "Choose all that apply.",
+    looksOptions: [
+      { value: "spots", label: "Black, green or grey spots" },
+      { value: "water", label: "Water on windows or walls" },
+      { value: "paint", label: "Peeling or bubbling paint or wallpaper" },
+      { value: "smell", label: "A damp or musty smell" },
+      { value: "other", label: "Something else" }
+    ],
+    photosLabel: "Add photos (optional)",
+    photosHint: "Up to 3 photos of the damp or mould. Try not to include people or personal things.",
+    photosAdded: "Photos added: {n}",
+    heatingLabel: "Do you ever turn your heating off, or keep it low, because of the cost?",
+    heatingHint: "Lots of people do. This helps us offer the right help, like energy advice. You don't have to tell us.",
+    heatingOptions: [
+      { value: "yes", label: "Yes" },
+      { value: "no", label: "No" },
+      { value: "skip", label: "I'd rather not say" }
+    ],
+    agesLabel: "Does anyone at home fit any of these?",
+    agesHint: "This helps us decide who to visit first. You don't have to tell us.",
+    agesOptions: [
+      { value: "under5", label: "Aged 5 or under" },
+      { value: "over65", label: "Aged over 65" },
+      { value: "none", label: "No one at home fits these" },
+      { value: "skip", label: "I'd rather not say" }
+    ],
     noteLabel: "Anything else you want to tell us? (optional)",
     submit: "Send to Cloch",
     back: "Back",
