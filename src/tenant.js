@@ -134,7 +134,32 @@ const Tenant = {
             <span>${esc(t.statusSteps[step])}${i <= reached ? "" : '<span class="visually-hidden"> (not yet)</span>'}</span>
             ${step === "visit" && r.officer ? `<p class="hint">${esc(t.visitText.replace("{officer}", r.officer).replace("{date}", formatDate(r.visitDate)))}</p>` : ""}
           </li>`).join("")}
-      </ol>`;
+      </ol>
+      ${reached >= order.indexOf("repair") ? this.foundHtml(t, r) : ""}`;
+  },
+
+  // What the housing officer found: a short summary first, then the full report for anyone who wants it.
+  foundHtml(t, r) {
+    const f = DATA.findings[r.ref] || DATA.findings.default;
+    const row = (label, value) => `<dt>${esc(label)}</dt><dd>${esc(value)}</dd>`;
+    return `
+      <section class="card found" aria-labelledby="found-title">
+        <h3 id="found-title">${esc(t.foundTitle)}</h3>
+        <p><span class="found-outcome">${esc(f.outcome)}</span></p>
+        <p>${esc(f.summary)}</p>
+        ${r.officer ? `<p class="hint">${esc(t.foundVisited.replace("{officer}", r.officer).replace("{date}", formatDate(r.visitDate)))}</p>` : ""}
+        <details>
+          <summary>${esc(t.foundMore)}</summary>
+          <dl class="found-details">
+            ${row(t.foundChecked, f.checked)}
+            ${row(t.foundCause, f.cause)}
+            ${row(t.foundReading, f.reading)}
+            ${row(t.foundMould, f.mould)}
+            <dt>${esc(t.foundPlan)}</dt>
+            <dd><ul>${f.plan.map((p) => `<li>${esc(p)}</li>`).join("")}</ul></dd>
+          </dl>
+        </details>
+      </section>`;
   },
 
   bind(el) {

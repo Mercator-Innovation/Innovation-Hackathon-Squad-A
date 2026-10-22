@@ -47,5 +47,29 @@ window.DATA = {
       note: "", status: "received", seen: false }
   ],
 
-  officers: ["Jamie Rennie", "Priya Nair", "Callum Fraser", "Ewa Kowalska"]
+  officers: ["Jamie Rennie", "Priya Nair", "Callum Fraser", "Ewa Kowalska"],
+
+  // What the housing officer found at the visit, shown to the tenant once the visit is done.
+  // Awaab's Law: the tenant must get a written summary within 3 working days of the visit.
+  // "default" is used for any report that doesn't have its own findings (like a new one made in the demo).
+  findings: {
+    "DM-2033": {
+      outcome: "Needs a repair",
+      summary: "The fan in your bathroom isn't working, so steam can't get out. There's mould on the ceiling above the shower.",
+      checked: "Bathroom, hall, bedroom",
+      cause: "Broken extractor fan in the bathroom",
+      reading: "High in the bathroom, normal in other rooms",
+      mould: "A patch about the size of a pillow, on the bathroom ceiling",
+      plan: ["Fit a new bathroom fan", "Treat the mould and repaint the ceiling"]
+    },
+    default: {
+      outcome: "Needs a repair",
+      summary: "A leaking gutter outside is letting water into the wall. There's mould on one wall.",
+      checked: "Every room",
+      cause: "Blocked and cracked gutter above the window",
+      reading: "High on the wall under the gutter, normal in other rooms",
+      mould: "About 1 square metre, low down on the wall",
+      plan: ["Fix the gutter", "Dry out and treat the wall", "Repaint once it's dry"]
+    }
+  }
 };

@@ -57,7 +57,16 @@ window.CONTENT = {
       fixed: "Fixed"
     },
     visitText: "{officer} will visit on {date}.",
-    viewReport: "See progress"
+    viewReport: "See progress",
+
+    foundTitle: "What we found",
+    foundVisited: "{officer} visited on {date}.",
+    foundMore: "Read the full report",
+    foundChecked: "Rooms we checked",
+    foundCause: "What's causing it",
+    foundReading: "How damp it is",
+    foundMould: "Mould",
+    foundPlan: "What we're going to do"
   },
 
   office: {
