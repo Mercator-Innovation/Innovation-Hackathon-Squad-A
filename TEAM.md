@@ -4,8 +4,8 @@
 
 **Repo:** Innovation-Hackathon-Squad-A
 **Squad name:** Return of the Hacks
-**Challenge:** _chosen on the day_
-**Why we chose it:** _(one or two sentences)_
+**Challenge:** 1. Healthier homes: finding tenants at risk before they get ill
+**Why we chose it:** Cold, damp homes hurt older people, children and people on low incomes most, and we want to help them before they get ill, not after. With made-up data, it's also something we can build and show today.
 **The idea:** _(one or two sentences, agreed on the day: who it's for, when they need it, and what it does)_
 
 ## Members
