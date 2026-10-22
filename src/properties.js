@@ -110,7 +110,7 @@ const Properties = {
             <p class="hint" id="prop-address-hint">${esc(p.addressHint)}</p>
             ${fieldError("address")}
             <input type="text" id="prop-address" autocomplete="off" value="${esc(v.address)}"
-              aria-describedby="prop-address-hint${err.address ? " address-error" : ""}">
+              aria-describedby="prop-address-hint${err.address ? " address-error" : ""}" ${err.address ? 'aria-invalid="true"' : ""}>
           </div>
           <div class="field">
             <label for="prop-type">${esc(p.typeLabel)}</label>
@@ -140,7 +140,7 @@ const Properties = {
             <label for="prop-people">${esc(p.peopleLabel)}</label>
             ${fieldError("people")}
             <input type="number" id="prop-people" class="short" min="1" step="1" inputmode="numeric" value="${esc(v.people)}"
-              ${err.people ? `aria-describedby="people-error"` : ""}>
+              ${err.people ? `aria-describedby="people-error" aria-invalid="true"` : ""}>
           </div>
           <fieldset class="field">
             <legend>${esc(p.householdLabel)}</legend>
@@ -240,8 +240,12 @@ const Properties = {
     el.querySelector("[data-add]").addEventListener("click", () => this.open("new"));
     el.querySelectorAll("[data-edit]").forEach((btn) => btn.addEventListener("click", () => this.open(btn.dataset.edit)));
     el.querySelectorAll("[data-cancel]").forEach((btn) => btn.addEventListener("click", () => {
+      const from = this.editingId;
       this.message = "";
       this.close();
+      // Put keyboard focus back on the button the person came from.
+      const back = document.querySelector(from === "new" ? "#properties-screen [data-add]" : `#properties-screen [data-edit="${from}"]`);
+      if (back) back.focus();
     }));
 
     const form = el.querySelector("#property-form");
