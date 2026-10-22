@@ -37,13 +37,21 @@ const Tenant = {
             <button type="button" class="button secondary" data-action="prompt-no">${esc(t.promptNo)}</button>
           </div>
         </div>`;
+    // Reports still being dealt with go first; fixed ones sit underneath as past reports, newest first.
+    const card = (r, past) => `
+          <li class="card${past ? " past" : ""}">
+            <p class="report-ref">${esc(r.ref)} · ${esc(r.rooms.join(", "))} · ${esc(formatDate(r.date))}</p>
+            <p><strong>${esc(past && r.fixedDate ? t.fixedOn.replace("{date}", formatDate(r.fixedDate)) : t.statusSteps[r.status])}</strong></p>
+            ${!past && r.status === "visit" && r.officer ? `<p class="hint">${esc(t.visitText.replace("{officer}", r.officer).replace("{date}", formatDate(r.visitDate)))}</p>` : ""}
+            <button type="button" class="link-button" data-action="status" data-ref="${esc(r.ref)}">${esc(past ? t.viewPast : t.viewReport)}<span class="visually-hidden"> for ${esc(r.ref)}</span></button>
+          </li>`;
+    const newestFirst = (a, b) => (b.date > a.date ? 1 : -1);
+    const open = reports.filter((r) => r.status !== "fixed").sort(newestFirst);
+    const past = reports.filter((r) => r.status === "fixed").sort(newestFirst);
     const list = reports.length
-      ? `<ul class="report-list">${reports.map((r) => `
-          <li class="card">
-            <p class="report-ref">${esc(r.ref)} · ${esc(formatDate(r.date))}</p>
-            <p><strong>${esc(t.statusSteps[r.status])}</strong></p>
-            <button type="button" class="link-button" data-action="status" data-ref="${esc(r.ref)}">${esc(t.viewReport)}<span class="visually-hidden"> for ${esc(r.ref)}</span></button>
-          </li>`).join("")}</ul>`
+      ? `<h4>${esc(t.inProgress)}</h4>
+        ${open.length ? `<ul class="report-list">${open.map((r) => card(r, false)).join("")}</ul>` : `<p class="muted">${esc(t.noInProgress)}</p>`}
+        ${past.length ? `<h4>${esc(t.pastReports)}</h4><ul class="report-list">${past.map((r) => card(r, true)).join("")}</ul>` : ""}`
       : `<p>${esc(t.noReports)}</p>`;
     return `
       <h2 tabindex="-1">${esc(t.greeting)}</h2>

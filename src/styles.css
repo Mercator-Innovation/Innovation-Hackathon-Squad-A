@@ -115,6 +115,10 @@ main { padding-bottom: 2rem; }
 .found-details dd { margin: 0.15rem 0 0; }
 .found-details ul { margin: 0; padding-left: 1.25rem; }
 
+/* Tenant home: past (fixed) reports are quieter than ones in progress */
+.report-list .card.past { background: var(--bg); }
+.phone-screen h4 { margin: 1rem 0 0.5rem; font-size: 1rem; }
+
 /* Photos the tenant adds to a report */
 .photo-previews { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.5rem; }
 .photo-previews img { width: 96px; height: 96px; object-fit: cover; border-radius: var(--radius); border: 1px solid var(--border); }
