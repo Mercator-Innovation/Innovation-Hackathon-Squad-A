@@ -1,17 +1,33 @@
 // The words people see. Edit freely: no code knowledge needed.
 // Keep sentences short, use "you", and aim for a reading age of about 9.
 window.CONTENT = {
-  productName: "Healthier homes",
+  productName: "Return of the Hacks",
   banner: "This is a prototype. Everything in it is made up.",
 
   tenant: {
     greeting: "Hello",
-    promptTitle: "Time for your monthly home check",
-    promptText: "Have you seen any damp or mould at home this month? It only takes a minute to tell us.",
+
+    // The text message that starts the journey, and signing in.
+    smsApp: "Messages",
+    smsFrom: "Cloch Housing",
+    smsTime: "Today, 9:02am",
+    smsText: "Hi {name}, it's time for your home check. Have you seen any damp or mould at home? It only takes a minute to tell us.",
+    smsLink: "cloch.example/check",
+    smsCode: "Your sign-in code is {code}.",
+    smsLinkHint: "Tap the link to open it",
+    signInTitle: "Sign in",
+    signInIntro: "Enter the 6-digit code from the text we sent to your phone ending {last}.",
+    codeLabel: "Code",
+    codeHint: "It's in the text message from Cloch Housing.",
+    codeError: "Enter the 6-digit code from your text message",
+    signInButton: "Sign in",
+    backToText: "Back to the text message",
+    signOut: "Sign out",
+    promptTitle: "Time for your home check",
+    promptText: "Have you seen any damp or mould at home recently? It only takes a minute to tell us.",
     promptYes: "Yes, I've seen some",
     promptNo: "No, all fine",
-    promptThanks: "Thanks for checking. We'll ask again next month.",
-    reportButton: "Tell us about damp or mould",
+    promptThanks: "Thanks for checking. We'll ask again soon.",
     yourReports: "Your reports",
     noReports: "You haven't told us about any damp or mould yet.",
     inProgress: "In progress",
@@ -64,21 +80,21 @@ window.CONTENT = {
       { value: "medium", label: "A few patches", hint: "Or one bigger than a sheet of paper" },
       { value: "large", label: "A lot", hint: "It covers a big part of a wall or ceiling" }
     ],
-    healthLabel: "Does anyone at home have breathing problems, like asthma?",
-    healthHint: "This helps us decide who to visit first. You don't have to tell us.",
+    healthLabel: "Does anyone at home have breathing problems, like asthma? (optional)",
+    healthHint: "This helps us decide who to visit first.",
     healthOptions: [
       { value: "yes", label: "Yes" },
       { value: "no", label: "No" },
       { value: "skip", label: "I'd rather not say" }
     ],
-    howLongLabel: "How long has it been there?",
+    howLongLabel: "How long has it been there? (optional)",
     howLongOptions: [
       { value: "month", label: "Less than a month" },
       { value: "months", label: "1 to 6 months" },
       { value: "longer", label: "More than 6 months" },
       { value: "unsure", label: "I'm not sure" }
     ],
-    looksLabel: "What does it look like?",
+    looksLabel: "What does it look like? (optional)",
     looksHint: "Choose all that apply.",
     looksOptions: [
       { value: "spots", label: "Black, green or grey spots" },
@@ -88,17 +104,18 @@ window.CONTENT = {
       { value: "other", label: "Something else" }
     ],
     photosLabel: "Add photos (optional)",
-    photosHint: "Up to 3 photos of the damp or mould. Try not to include people or personal things.",
+    photosHint: "Add as many photos of the damp or mould as you like. Try not to include people or personal things.",
     photosAdded: "Photos added: {n}",
-    heatingLabel: "Do you ever turn your heating off, or keep it low, because of the cost?",
-    heatingHint: "Lots of people do. This helps us offer the right help, like energy advice. You don't have to tell us.",
+    photosClear: "Remove all photos",
+    heatingLabel: "Do you ever turn your heating off, or keep it low, because of the cost? (optional)",
+    heatingHint: "Lots of people do. This helps us offer the right help, like energy advice.",
     heatingOptions: [
       { value: "yes", label: "Yes" },
       { value: "no", label: "No" },
       { value: "skip", label: "I'd rather not say" }
     ],
-    agesLabel: "Does anyone at home fit any of these?",
-    agesHint: "This helps us decide who to visit first. You don't have to tell us.",
+    agesLabel: "Does anyone at home fit any of these? (optional)",
+    agesHint: "This helps us decide who to visit first. Choose all that apply.",
     agesOptions: [
       { value: "under5", label: "Aged 5 or under" },
       { value: "over65", label: "Aged over 65" },
@@ -315,7 +332,7 @@ window.CONTENT = {
       { value: "unknown", label: "They haven't told us" }
     ],
     appLabel: "Healthier homes app",
-    appHint: "Only change this when the tenant asks. Opted-in tenants get monthly home checks and updates on their phone.",
+    appHint: "Only change this when the tenant asks. Opted-in tenants get regular home checks and updates on their phone.",
     appOptions: [
       { value: "in", label: "Opted in" },
       { value: "out", label: "Opted out" }
@@ -334,5 +351,16 @@ window.CONTENT = {
     saved: "{address} saved.",
     removed: "Tenant removed from {address}.",
     deleted: "{address} deleted."
+  },
+
+  demo: {
+    title: "Demo controls",
+    intro: "Set up the tenant's phone for a demo. This changes only the tenant on the phone.",
+    none: "No reports yet",
+    several: "Several reports",
+    text: "Start from the text message",
+    doneNone: "The tenant now has no reports.",
+    doneSeveral: "The tenant now has 4 reports: new, visit booked, repair started and fixed.",
+    doneText: "The phone is back at the text message."
   }
 };
