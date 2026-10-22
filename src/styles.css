@@ -174,3 +174,34 @@ input.short { max-width: 8rem; }
 }
 .sub-nav button:hover { background: #e6eeed; }
 .sub-nav button[aria-pressed="true"] { color: var(--text); border-bottom-color: var(--brand); }
+
+/* A property's full record */
+.record-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; }
+.record-head h2, .record-head h3 { margin: 0; }
+.record-grid { display: grid; gap: var(--gap); margin-bottom: var(--gap); }
+.record-grid > .card { margin: 0; min-width: 0; }
+@media (min-width: 800px) {
+  .record-grid { grid-template-columns: repeat(3, 1fr); align-items: start; }
+  .record-grid.two { grid-template-columns: 1fr 1fr; }
+}
+.facts { margin: 0; }
+.facts > div { display: grid; grid-template-columns: 10rem 1fr; gap: 0.5rem; padding: 0.35rem 0; border-bottom: 1px solid var(--border); }
+.facts dt { font-weight: 700; }
+.facts dd { margin: 0; }
+@media (max-width: 420px) { .facts > div { grid-template-columns: 1fr; gap: 0; } }
+.callout { border-left: 5px solid var(--brand); background: #e6eeed; padding: 0.5rem 0.75rem; margin-top: 0.75rem; }
+
+.timeline { list-style: none; margin: 1rem 0 0; padding: 0; }
+.event { position: relative; padding: 0 0 1.25rem 1.5rem; border-left: 3px solid var(--border); margin-left: 0.5rem; }
+.event::before { content: ""; position: absolute; left: -0.6rem; top: 0.2rem; width: 1rem; height: 1rem; border-radius: 50%; background: var(--surface); border: 3px solid var(--brand); }
+.event.repair::before { background: var(--brand); }
+.event.report::before { border-color: var(--high); }
+.event h4 { font-size: 1.0625rem; margin: 0.1rem 0 0.35rem; }
+.event p { margin-bottom: 0.35rem; }
+.event-meta { color: var(--muted); font-size: 0.9rem; margin: 0; }
+.event-type { display: inline-block; font-weight: 700; color: var(--text); background: var(--bg); border: 1px solid var(--border); border-radius: 4px; padding: 0 0.4rem; margin-right: 0.25rem; }
+.history-form { border: 2px solid var(--border); border-radius: var(--radius); padding: var(--gap); margin: 1rem 0; }
+.history-form h4 { margin-top: 0; }
+.form-columns { display: grid; gap: 0 var(--gap); }
+@media (min-width: 600px) { .form-columns { grid-template-columns: 1fr 1fr; } }
+input[type="date"] { max-width: 14rem; }
