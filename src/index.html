@@ -32,10 +32,19 @@
       </div>
     </section>
 
-    <!-- Head office view: office.js fills this in -->
+    <!-- Head office view: two sections, switched by the buttons below (properties.js) -->
     <section id="office-view" class="view" aria-labelledby="office-view-title" hidden>
-      <h1 id="office-view-title">Homes at risk of damp and mould</h1>
+      <h1 id="office-view-title">Cloch head office</h1>
+      <nav aria-label="Head office sections">
+        <ul class="sub-nav">
+          <li><button type="button" data-office-tab="risk" aria-pressed="true">Homes at risk</button></li>
+          <li><button type="button" data-office-tab="properties" aria-pressed="false">Properties and tenants</button></li>
+        </ul>
+      </nav>
+      <!-- Homes at risk: office.js fills this in -->
       <div id="office-screen"></div>
+      <!-- Properties and tenants: properties.js fills this in -->
+      <div id="properties-screen" hidden></div>
     </section>
   </main>
 
@@ -45,9 +54,11 @@
 
   <script src="content.js"></script>
   <script src="data/homes.js"></script>
+  <script src="data/tenants.js"></script>
   <script src="app.js"></script>
   <script src="tenant.js"></script>
   <script src="office.js"></script>
+  <script src="properties.js"></script>
   <script>App.start();</script>
 </body>
 </html>
