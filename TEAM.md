@@ -6,7 +6,23 @@
 **Squad name:** Return of the Hacks
 **Challenge:** 1. Healthier homes: finding tenants at risk before they get ill
 **Why we chose it:** Cold, damp homes hurt older people, children and people on low incomes most, and we want to help them before they get ill, not after. With made-up data, it's also something we can build and show today.
-**The idea:** _(one or two sentences, agreed on the day: who it's for, when they need it, and what it does)_
+**The idea:** A simple way for Cloch tenants to report damp and mould, with regular prompts so problems come to light early, and updates on visits and repairs. Cloch's head office gets alerts, ranks homes at risk and shows why each one is ranked, so a person decides which to assign to housing officers.
+
+**What it does**
+
+For tenants:
+
+- Prompts tenants to report damp and mould at their home regularly
+- Lets tenants report damp and mould at their home
+- Confirms the tenant's report has been received
+- Tells the tenant when a housing officer is visiting
+- Tells the tenant how the repair is going
+
+For Cloch's head office:
+
+- Alerts Cloch when a tenant reports damp or mould
+- Lets Cloch monitor, rank and assess homes at risk, showing why each one is ranked
+- Lets Cloch assign high-risk homes to housing officers to investigate
 
 ## Members
 
