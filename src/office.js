@@ -77,6 +77,8 @@ const Office = {
   filters: { risk: "all", status: "all", officer: "all", town: "all" },
   sort: "risk",
   openHomeId: null,
+  fullScreen: false, // the review shown full width, instead of next to the list
+  search: "",
   assignError: null,
   dateValue: null,
 
@@ -107,7 +109,11 @@ const Office = {
     const el = document.getElementById("office-screen");
     const ranked = this.rows();
     const f = this.filters;
+    const words = this.search.toLowerCase().split(/\s+/).filter(Boolean);
+    const text = (row) => [row.home.address, row.home.tenant && row.home.tenant.name, row.home.tenant && row.home.tenant.phone,
+      ...App.reportsFor(row.home.id).map((r) => r.ref)].filter(Boolean).join(" ").toLowerCase();
     const shown = ranked.filter((row) =>
+      words.every((w) => text(row).includes(w) || text(row).replace(/\s/g, "").includes(w)) &&
       (f.risk === "all" || row.risk.band === f.risk) &&
       (f.status === "all" || this.statusKey(row) === f.status) &&
       (f.officer === "all" || (f.officer === "none" ? !this.officerOf(row) : this.officerOf(row) === f.officer)) &&
@@ -126,6 +132,13 @@ const Office = {
         <select id="${id}">${options.map(([v, text]) => `<option value="${esc(v)}" ${v === value ? "selected" : ""}>${esc(text)}</option>`).join("")}</select>
       </div>`;
 
+    if (this.fullScreen && this.openHomeId && App.home(this.openHomeId)) {
+      el.innerHTML = this.fullHtml(o);
+      this.bind(el);
+      return;
+    }
+    this.fullScreen = false;
+
     el.innerHTML = `
       ${this.alertsHtml(o)}
       <div class="office-layout">
@@ -133,6 +146,11 @@ const Office = {
           <h2 id="list-title">${esc(o.listTitle)}</h2>
           <p class="muted">${esc(o.listIntro)}</p>
           ${this.howItWorksHtml(o)}
+          <div class="field search">
+            <label for="risk-search">${esc(o.searchLabel)}</label>
+            <p class="hint" id="risk-search-hint">${esc(o.searchHint)}</p>
+            <input type="search" id="risk-search" autocomplete="off" value="${esc(this.search)}" aria-describedby="risk-search-hint">
+          </div>
           <fieldset class="filters">
             <legend>${esc(o.filtersTitle)}</legend>
             ${select("filter-risk", o.filterRisk, f.risk, [["all", o.any], ["high", o.bands.high], ["medium", o.bands.medium], ["low", o.bands.low]])}
@@ -142,7 +160,7 @@ const Office = {
             ${select("sort-by", o.sortLabel, this.sort, [["risk", o.sortRisk], ["deadline", o.sortDeadline], ["address", o.sortAddress]])}
           </fieldset>
           <p class="result-count" aria-live="polite">${esc(o.showing.replace("{shown}", shown.length).replace("{total}", ranked.length))}
-            ${shown.length < ranked.length ? `<button type="button" class="link-button" data-clear>${esc(o.clearFilters)}</button>` : ""}</p>
+            ${shown.length < ranked.length || this.search ? `<button type="button" class="link-button" data-clear>${esc(o.clearFilters)}</button>` : ""}</p>
           <div class="table-scroll" tabindex="0" role="region" aria-labelledby="list-title">
             <table>
               <thead><tr>
@@ -185,15 +203,40 @@ const Office = {
     return `<span class="deadline ${level}"><strong>${esc(when)}</strong><br>${esc(o.steps[step.key])}</span>`;
   },
 
+  // How the ranking works, as pictures: a bar for each thing that adds points, the risk bands on
+  // a 0 to 100 scale, and the deadlines as steps. Every picture has its numbers in words too.
   howItWorksHtml(o) {
+    const max = Math.max(...o.howPoints.map(([pts]) => Number(String(pts).match(/\d+(?!.*\d)/)[0])));
+    const bars = o.howPoints.map(([pts, text]) => {
+      const top = Number(String(pts).match(/\d+(?!.*\d)/)[0]);
+      return `<li><span class="how-label">${esc(text)}</span>
+        <span class="how-bar" aria-hidden="true"><span style="width:${Math.round(100 * top / max)}%"></span></span>
+        <span class="how-pts">${esc(pts)}</span></li>`;
+    }).join("");
+    const days = (n) => `${n} working ${n === 1 ? "day" : "days"}`;
+    const steps = [["investigate", AWAAB.investigate, o.howFromReport], ["summary", AWAAB.summary, o.howFromVisit],
+      ["startRepair", AWAAB.startRepair, o.howFromVisit], ["finishRepair", AWAAB.finishRepair, o.howFromStart]];
     return `
       <details class="how-it-works">
         <summary>${esc(o.howTitle)}</summary>
         <p>${esc(o.howIntro)}</p>
-        <ul class="reasons">${o.howPoints.map(([points, text]) => `<li><span class="points">${esc(points)}</span> ${esc(text)}</li>`).join("")}</ul>
+        <h3>${esc(o.howPointsTitle)}</h3>
+        <ul class="how-bars">${bars}</ul>
+        <h3>${esc(o.howBandsTitle)}</h3>
+        <div class="how-scale" aria-hidden="true">
+          <span class="low" style="width:35%">${esc(o.bands.low)}</span><span class="medium" style="width:25%">${esc(o.bands.medium)}</span><span class="high" style="width:40%">${esc(o.bands.high)}</span>
+        </div>
+        <div class="how-scale-ticks" aria-hidden="true"><span>0</span><span style="left:35%">35</span><span style="left:60%">60</span><span style="left:100%">100</span></div>
         <p>${esc(o.howBands)}</p>
-        <p>${esc(o.howVisits)}</p>
-        <p>${esc(o.howLaw)}</p>
+        <h3>${esc(o.howVisitsTitle)}</h3>
+        <ul class="how-visits">
+          ${["high", "medium", "low"].map((b) => `<li><span class="badge ${b}">${esc(o.bands[b])}</span> ${esc(o.howWithin.replace("{days}", days(VISIT_WITHIN[b])))}</li>`).join("")}
+        </ul>
+        <h3>${esc(o.howLawTitle)}</h3>
+        <ol class="how-steps">
+          ${steps.map(([key, n, from]) => `<li><strong>${esc(o.steps[key])}</strong><span class="how-days">${esc(days(n))}</span><span class="hint">${esc(from)}</span></li>`).join("")}
+        </ol>
+        <p class="hint">${esc(o.howLawNote)}</p>
       </details>`;
   },
 
@@ -222,7 +265,8 @@ const Office = {
     return { earliest, latest: latest < earliest ? earliest : latest, byLaw };
   },
 
-  detailHtml(o) {
+  // The pieces of a review, shared by the side panel and the full screen.
+  detailParts(o) {
     const home = App.home(this.openHomeId);
     const risk = Risk.score(home);
     const report = App.openReport(home.id);
@@ -270,29 +314,73 @@ const Office = {
       </div>`;
     }
 
+    const li = (items) => `<ul class="facts-list">${items.filter(Boolean).map((i) => `<li>${i}</li>`).join("")}</ul>`;
+    const household = li([
+      esc(home.type), esc(o.epcItem.replace("{epc}", home.epc)), ...facts.split(", ").map((f) => esc(f))
+    ]);
+    const sensor = home.sensor
+      ? li(o.sensorText.replaceAll("{cold}", home.sensor.coldDays).replaceAll("{damp}", home.sensor.dampDays)
+          .replaceAll("{days}", home.sensor.days).replaceAll("{temp}", home.sensor.avgTemp)
+          .replaceAll("{humidity}", home.sensor.avgHumidity).split(". ").map((s) => esc(s.replace(/\.$/, ""))))
+      : `<p class="muted">${esc(o.noSensor)}</p>`;
+    const reportPart = report ? li([
+      `<strong>${esc(o.refItem)}</strong> ${esc(report.ref)}`,
+      `<strong>${esc(o.roomsItem)}</strong> ${esc(report.rooms.join(", "))}`,
+      `<strong>${esc(o.dateItem)}</strong> ${esc(formatDate(report.date))}`,
+      report.note && `<strong>${esc(o.noteItem)}</strong> “${esc(report.note)}”`
+    ]) + this.answersHtml(report) : "";
+    return {
+      home, risk, report, actions, household, sensor, reportPart,
+      why: `<ul class="reasons">${risk.reasons.map((r) => `<li><span class="points">+${r.points}</span> ${esc(r.text)}</li>`).join("")}</ul>`,
+      law: report ? this.lawHtml(o, report) : "",
+      badge: `<p><span class="badge ${risk.band}">${esc(o.bands[risk.band])} risk</span> <span class="score">${risk.total} / 100</span></p>`
+    };
+  },
+
+  // The review, next to the list.
+  detailHtml(o) {
+    const d = this.detailParts(o);
     return `
       <section class="card detail" aria-labelledby="detail-title">
         <div class="detail-head">
-          <h2 id="detail-title" tabindex="-1">${esc(home.address)}</h2>
+          <h2 id="detail-title" tabindex="-1">${esc(d.home.address)}</h2>
           <button type="button" class="link-button" data-close>${esc(o.close)}</button>
         </div>
-        <p><span class="badge ${risk.band}">${esc(o.bands[risk.band])} risk</span> <span class="score">${risk.total} / 100</span></p>
+        <p><button type="button" class="button secondary small" data-full>${esc(o.fullScreen)}<span class="visually-hidden"> ${esc(o.forHome.replace("{address}", d.home.address))}</span></button></p>
+        ${d.badge}
         <h3>${esc(o.detailTitle)}</h3>
-        <ul class="reasons">${risk.reasons.map((r) => `<li><span class="points">+${r.points}</span> ${esc(r.text)}</li>`).join("")}</ul>
+        ${d.why}
         <h3>${esc(o.household)}</h3>
-        <p>${esc(home.type)}, energy rating ${esc(home.epc)}. ${esc(facts)}.</p>
+        ${d.household}
         <p class="hint">${esc(o.consentNote)}</p>
         <h3>${esc(o.sensorTitle)}</h3>
-        <p>${home.sensor ? esc(o.sensorText
-          .replaceAll("{cold}", home.sensor.coldDays).replaceAll("{damp}", home.sensor.dampDays)
-          .replaceAll("{days}", home.sensor.days).replaceAll("{temp}", home.sensor.avgTemp)
-          .replaceAll("{humidity}", home.sensor.avgHumidity)) : `<span class="muted">${esc(o.noSensor)}</span>`}</p>
-        ${report ? `<h3>${esc(o.reports)}</h3>
-          <p>${esc(report.ref)}: ${esc(report.rooms.join(", "))} · ${esc(formatDate(report.date))}${report.note ? `<br>“${esc(report.note)}”` : ""}</p>
-          ${this.answersHtml(report)}
-          ${this.lawHtml(o, report)}` : ""}
-        ${actions}
+        ${d.sensor}
+        ${d.report ? `<h3>${esc(o.reports)}</h3>${d.reportPart}${d.law}` : ""}
+        ${d.actions}
       </section>`;
+  },
+
+  // The same review across the whole screen, with room for photos and the deadlines.
+  fullHtml(o) {
+    const d = this.detailParts(o);
+    const t = d.home.tenant;
+    return `
+      <p><button type="button" class="link-button" data-exit-full>‹ ${esc(o.backToList)}</button></p>
+      <div class="record-head">
+        <h2 id="detail-title" tabindex="-1">${esc(d.home.address)}</h2>
+        <button type="button" class="button secondary" data-open-record>${esc(o.openRecord)}</button>
+      </div>
+      ${d.badge}
+      ${t ? `<p class="muted">${esc(o.tenantLine.replace("{name}", t.name))}</p>` : ""}
+      <div class="record-grid full-review">
+        <section class="card" aria-labelledby="full-why"><h3 id="full-why">${esc(o.detailTitle)}</h3>${d.why}</section>
+        <section class="card" aria-labelledby="full-household"><h3 id="full-household">${esc(o.household)}</h3>${d.household}
+          <p class="hint">${esc(o.consentNote)}</p>
+          <h3>${esc(o.sensorTitle)}</h3>${d.sensor}</section>
+        ${d.report ? `<section class="card" aria-labelledby="full-law">${d.law.replace("<h3>", '<h3 id="full-law">')}</section>` : ""}
+      </div>
+      ${d.report ? `<section class="card full-report" aria-labelledby="full-report"><h3 id="full-report">${esc(o.reports)}</h3>${d.reportPart}</section>` : `<section class="card"><p class="muted">${esc(o.noStatus)}</p></section>`}
+      ${d.actions ? `<section class="card" aria-labelledby="full-next"><h3 id="full-next">${esc(o.nextStep)}</h3>${d.actions}</section>` : ""}`;
   },
 
   // The tenant's answers from the report form, in the tenant's own words. Skipped questions aren't shown.
@@ -331,12 +419,12 @@ const Office = {
 
   bind(el) {
     const filterIds = { "filter-risk": "risk", "filter-status": "status", "filter-officer": "officer", "filter-town": "town" };
-    Object.entries(filterIds).forEach(([id, key]) => el.querySelector(`#${id}`).addEventListener("change", (ev) => {
+    Object.entries(filterIds).forEach(([id, key]) => el.querySelector(`#${id}`)?.addEventListener("change", (ev) => {
       this.filters[key] = ev.target.value;
       this.render();
       document.getElementById(id).focus();
     }));
-    el.querySelector("#sort-by").addEventListener("change", (ev) => {
+    el.querySelector("#sort-by")?.addEventListener("change", (ev) => { // not there on the full screen
       this.sort = ev.target.value;
       this.render();
       document.getElementById("sort-by").focus();
@@ -344,6 +432,7 @@ const Office = {
     const clear = el.querySelector("[data-clear]");
     if (clear) clear.addEventListener("click", () => {
       this.filters = { risk: "all", status: "all", officer: "all", town: "all" };
+      this.search = "";
       this.render();
       document.getElementById("filter-risk").focus();
     });
@@ -360,6 +449,30 @@ const Office = {
       App.state.reports.find((r) => r.ref === btn.dataset.seen).seen = true;
       App.save();
     }));
+    const search = el.querySelector("#risk-search");
+    if (search) search.addEventListener("input", () => {
+      this.search = search.value;
+      const at = search.selectionStart;
+      this.render();
+      const box = document.getElementById("risk-search");
+      box.focus();
+      box.setSelectionRange(at, at);
+    });
+    const full = el.querySelector("[data-full]");
+    if (full) full.addEventListener("click", () => { this.fullScreen = true; this.render(); document.getElementById("detail-title").focus(); });
+    const exitFull = el.querySelector("[data-exit-full]");
+    if (exitFull) exitFull.addEventListener("click", () => {
+      this.fullScreen = false;
+      this.render();
+      const back = document.querySelector(`#office-screen table [data-review="${this.openHomeId}"]`);
+      if (back) back.focus();
+    });
+    const record = el.querySelector("[data-open-record]");
+    if (record) record.addEventListener("click", () => {
+      App.state.officeTab = "properties";
+      Properties.message = "";
+      Properties.go("record", this.openHomeId);
+    });
     const close = el.querySelector("[data-close]");
     if (close) close.addEventListener("click", () => {
       const homeId = this.openHomeId;

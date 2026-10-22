@@ -277,3 +277,54 @@ input[type="search"] {
 .demo-panel { margin-top: 1rem; }
 .demo-panel summary { cursor: pointer; color: var(--brand-dark); text-decoration: underline; font-weight: 600; }
 .demo-panel[open] { border-left: 4px solid var(--brand); padding-left: 0.75rem; }
+
+/* Homes at risk: search, bullet points and the full-screen review */
+.facts-list { margin: 0 0 0.75rem; padding-left: 1.25rem; }
+.facts-list li { padding: 0.15rem 0; }
+.full-review { margin-bottom: var(--gap); }
+.full-report .photo-previews img { width: 200px; height: 150px; }
+.tag.contact { color: var(--brand-dark); }
+
+/* How the ranking works, as pictures */
+.how-bars { list-style: none; padding: 0; margin: 0 0 1rem; }
+.how-bars li { display: grid; grid-template-columns: minmax(0, 1fr) 6rem 4.5rem; gap: 0.5rem; align-items: center; padding: 0.25rem 0; }
+.how-bar { height: 0.9rem; background: #e6eeed; border-radius: 999px; overflow: hidden; }
+.how-bar span { display: block; height: 100%; background: var(--brand); }
+.how-pts { font-weight: 700; font-size: 0.9rem; text-align: right; }
+.how-scale { display: flex; height: 2rem; border-radius: var(--radius); overflow: hidden; color: #fff; font-weight: 700; font-size: 0.9rem; }
+.how-scale span { display: flex; align-items: center; justify-content: center; }
+.how-scale .low { background: var(--low); }
+.how-scale .medium { background: var(--medium); }
+.how-scale .high { background: var(--high); }
+.how-scale-ticks { position: relative; height: 1.25rem; font-size: 0.8rem; color: var(--muted); margin-bottom: 0.5rem; }
+.how-scale-ticks span { position: absolute; transform: translateX(-50%); }
+.how-scale-ticks span:first-child { transform: none; }
+.how-scale-ticks span:last-child { transform: translateX(-100%); }
+.how-visits { list-style: none; padding: 0; margin: 0 0 1rem; }
+.how-visits li { padding: 0.2rem 0; }
+.how-steps { list-style: none; padding: 0; margin: 0 0 0.5rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr)); gap: 0.5rem; counter-reset: step; }
+.how-steps li { border: 2px solid var(--brand); border-radius: var(--radius); padding: 0.5rem; display: flex; flex-direction: column; gap: 0.15rem; }
+.how-steps li::before { counter-increment: step; content: "Step " counter(step); font-size: 0.8rem; color: var(--muted); }
+.how-days { font-size: 1.25rem; font-weight: 700; color: var(--brand-dark); }
+@media (max-width: 500px) { .how-bars li { grid-template-columns: 1fr 4rem; } .how-bar { display: none; } }
+
+/* Housing officer */
+.inline-select { max-width: 24rem; }
+.assignment-list { list-style: none; margin: 0 0 var(--gap); padding: 0; display: grid; gap: var(--gap); }
+@media (min-width: 800px) { .assignment-list { grid-template-columns: repeat(2, 1fr); } }
+.assignment { margin: 0; }
+.assignment h3 { margin: 0; font-size: 1.125rem; }
+.assignment p { margin-bottom: 0.4rem; }
+.officer-deadline { border-left: 5px solid var(--border); padding-left: 0.5rem; }
+.officer-deadline.soon { border-color: var(--medium); }
+.officer-deadline.overdue { border-color: var(--high); color: var(--high); }
+.done-list { margin-top: 1rem; }
+.done-list summary { font-weight: 700; cursor: pointer; margin-bottom: var(--gap); }
+.form-section { border: 0; border-top: 1px solid var(--border); padding: 1rem 0 0; margin: 0 0 1rem; min-width: 0; }
+.form-section > legend { font-weight: 700; font-size: 1.125rem; padding: 0; float: left; width: 100%; margin-bottom: 0.5rem; }
+.form-section > legend + * { clear: both; }
+.conditional { border-left: 4px solid var(--border); padding-left: 1rem; margin: 0.5rem 0 0 0.6rem; }
+.notes { list-style: none; padding: 0; margin: 1rem 0 0; }
+.notes li { border-top: 1px solid var(--border); padding: 0.5rem 0; }
+.notes li p { margin-bottom: 0.25rem; }
+#officer-view .record-head .badge { flex-shrink: 0; }

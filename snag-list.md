@@ -36,3 +36,12 @@ Numbers 7 and 8 change the same page, so one person should build them together.
 16. Tenants: no limit on photo uploads
 17. Tenants: be consistent about which questions are optional
 18. Demo controls: switch the tenant between no reports and several reports
+
+## Round 3 (Gavin Woods)
+
+19. Head office: show tenants' photos in reports (also in the property history, with example photos): done
+20. Homes at risk: "Open full screen" from Review, with its own full-screen view: done
+21. Homes at risk: bullet points in the Review panel: done
+22. "How the ranking works": more visual (bars, risk bands, deadline steps): done
+23. Homes at risk: search bar: done
+24. Properties and tenants: "App" column is now "Preferred contact": done
