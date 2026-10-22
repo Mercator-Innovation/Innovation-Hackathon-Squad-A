@@ -29,6 +29,7 @@ ai_use_week_after:
 
 ## During
 <!-- Claude adds one line per moment: prompts that worked (word for word), dead ends, surprises, things done outside my usual job, what made working as a squad easier or harder -->
+- 16:50 Gavin and I built Awaab's Law deadlines at the same time, and we combined them: I undid mine and added my two extras on top of his (reports before 6 October aren't covered, and a warning when a visit is past the deadline). Putting a name on a snag before starting would have avoided it.
 
 ## At 19:00
 - What I worked on: <answers>
