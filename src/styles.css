@@ -233,3 +233,9 @@ input.short { max-width: 8rem; }
 .form-columns { display: grid; gap: 0 var(--gap); }
 @media (min-width: 600px) { .form-columns { grid-template-columns: 1fr 1fr; } }
 input[type="date"] { max-width: 14rem; }
+
+/* Properties: search box */
+.field.search { max-width: 32rem; }
+input[type="search"] {
+  font: inherit; width: 100%; padding: 0.5rem; border: 2px solid var(--text); border-radius: 4px; background: var(--surface);
+}
