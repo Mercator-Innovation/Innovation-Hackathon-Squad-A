@@ -50,7 +50,7 @@ const Properties = {
     const homes = App.state.homes;
     return `
       <p>${esc(p.intro)}</p>
-      <p><button type="button" class="button" data-add>${esc(p.addButton)}</button></p>
+      <p><button type="button" class="button" id="add-property" data-add>${esc(p.addButton)}</button></p>
       <section class="card" aria-labelledby="property-list-title">
         <h2 id="property-list-title">${homes.length} ${homes.length === 1 ? "property" : "properties"}</h2>
         <div class="table-scroll" tabindex="0" role="region" aria-labelledby="property-list-title">
@@ -208,7 +208,7 @@ const Properties = {
           <div class="field ${err.date ? "has-error" : ""}">
             <label for="hist-date">${esc(p.histDate)}</label>
             ${fieldError("date")}
-            <input type="date" id="hist-date" value="${esc(v.date)}">
+            <input type="date" id="hist-date" value="${esc(v.date)}" ${err.date ? `aria-describedby="hist-date-error" aria-invalid="true"` : ""}>
           </div>
           <div class="field">
             <label for="hist-type">${esc(p.histType)}</label>
@@ -219,7 +219,7 @@ const Properties = {
           <label for="hist-title">${esc(p.histTitle)}</label>
           <p class="hint" id="hist-title-hint">${esc(p.histTitleHint)}</p>
           ${fieldError("title")}
-          <input type="text" id="hist-title" value="${esc(v.title)}" aria-describedby="hist-title-hint${err.title ? " hist-title-error" : ""}">
+          <input type="text" id="hist-title" value="${esc(v.title)}" aria-describedby="hist-title-hint${err.title ? " hist-title-error" : ""}" ${err.title ? 'aria-invalid="true"' : ""}>
         </div>
         <div class="field">
           <label for="hist-detail">${esc(p.histDetail)}</label>
@@ -286,7 +286,7 @@ const Properties = {
               <p class="hint" id="prop-address-hint">${esc(p.addressHint)}</p>
               ${fieldError("address")}
               <input type="text" id="prop-address" autocomplete="off" value="${esc(v.address)}"
-                aria-describedby="prop-address-hint${err.address ? " address-error" : ""}">
+                aria-describedby="prop-address-hint${err.address ? " address-error" : ""}" ${err.address ? 'aria-invalid="true"' : ""}>
             </div>
             <div class="field">
               <label for="prop-type">${esc(p.typeLabel)}</label>
@@ -314,7 +314,7 @@ const Properties = {
               <label for="prop-age">${esc(p.ageLabelOptional)}</label>
               ${fieldError("age")}
               <input type="number" id="prop-age" class="short" min="16" max="120" step="1" inputmode="numeric" value="${esc(v.age)}"
-                ${err.age ? `aria-describedby="age-error"` : ""}>
+                ${err.age ? `aria-describedby="age-error" aria-invalid="true"` : ""}>
             </div>
             <div class="field">
               <label for="prop-phone">${esc(p.phoneLabel)}</label>
@@ -324,7 +324,7 @@ const Properties = {
               <label for="prop-people">${esc(p.peopleLabel)}</label>
               ${fieldError("people")}
               <input type="number" id="prop-people" class="short" min="1" step="1" inputmode="numeric" value="${esc(v.people)}"
-                ${err.people ? `aria-describedby="people-error"` : ""}>
+                ${err.people ? `aria-describedby="people-error" aria-invalid="true"` : ""}>
             </div>
             <fieldset class="field">
               <legend>${esc(p.householdLabel)}</legend>
@@ -431,8 +431,9 @@ const Properties = {
     on("[data-edit]", () => { this.message = ""; this.go("edit", home.id); });
     on("[data-cancel]", () => {
       this.message = "";
+      // Put keyboard focus back where the person came from.
       if (this.currentId && this.currentId !== "new") this.go("record", this.currentId);
-      else this.go("list");
+      else this.go("list", null, "add-property");
     });
 
     const form = el.querySelector("#property-form");
@@ -477,7 +478,7 @@ const Properties = {
       this.historyDraft = null;
       this.historyErrors = {};
       this.render();
-      document.getElementById("history-title").focus();
+      document.querySelector("#properties-screen [data-add-history]").focus();
     });
     const historyForm = el.querySelector("#history-form");
     if (historyForm) historyForm.addEventListener("submit", (ev) => {
