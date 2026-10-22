@@ -16,8 +16,9 @@ const App = {
     this.state.homes.forEach((home) => { // demo saved before sensor readings were added
       if (!("sensor" in home)) home.sensor = (DATA.homes.find((h) => h.id === home.id) || {}).sensor || null;
     });
+    const removed = this.state.removedRefs || []; // example reports taken out on purpose, for example by the demo controls
     DATA.reports.forEach((report) => { // example reports added after this demo was saved
-      if (!this.state.reports.some((r) => r.ref === report.ref)) this.state.reports.push(JSON.parse(JSON.stringify(report)));
+      if (!removed.includes(report.ref) && !this.state.reports.some((r) => r.ref === report.ref)) this.state.reports.push(JSON.parse(JSON.stringify(report)));
     });
 
     document.querySelectorAll("[data-view]").forEach((btn) => {
