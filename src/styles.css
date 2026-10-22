@@ -136,7 +136,7 @@ textarea, select, input[type="date"] {
   .office-layout > :only-child { grid-column: 1 / -1; }
 }
 
-.table-scroll { overflow-x: auto; }
+.table-scroll { overflow-x: auto; position: relative; } /* keeps hidden screen reader text inside, so phones don't scroll sideways */
 table { border-collapse: collapse; width: 100%; font-size: 0.95rem; }
 th, td { text-align: left; padding: 0.5rem; border-bottom: 1px solid var(--border); vertical-align: top; }
 th { border-bottom: 2px solid var(--text); }

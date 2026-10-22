@@ -23,4 +23,4 @@ Numbers 7 and 8 change the same page, so one person should build them together.
 ## Both
 
 9. A page or tab explaining how the assessment works and how the score is worked out
-10. Fix accessibility, including the scrolling problem at phone width
+10. Fix accessibility, including the scrolling problem at phone width (Dharmendra Patel: done)

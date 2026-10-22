@@ -67,10 +67,10 @@ const Tenant = {
       <h2 tabindex="-1">${esc(t.formTitle)}</h2>
       ${summary}
       <form id="report-form" novalidate>
-        <fieldset class="field ${e["rooms-0"] ? "has-error" : ""}">
+        <fieldset class="field ${e["rooms-0"] ? "has-error" : ""}" aria-describedby="rooms-hint${e["rooms-0"] ? " rooms-error" : ""}">
           <legend>${esc(t.roomsLabel)}</legend>
-          <p class="hint">${esc(t.roomsHint)}</p>
-          ${e["rooms-0"] ? `<p class="error">${esc(e["rooms-0"])}</p>` : ""}
+          <p class="hint" id="rooms-hint">${esc(t.roomsHint)}</p>
+          ${e["rooms-0"] ? `<p class="error" id="rooms-error"><span class="visually-hidden">Error: </span>${esc(e["rooms-0"])}</p>` : ""}
           ${t.rooms.map((room, i) => `
             <div class="choice">
               <input type="checkbox" id="rooms-${i}" name="rooms" value="${esc(room)}">
@@ -78,9 +78,9 @@ const Tenant = {
             </div>`).join("")}
         </fieldset>
 
-        <fieldset class="field ${e["severity-0"] ? "has-error" : ""}">
+        <fieldset class="field ${e["severity-0"] ? "has-error" : ""}" ${e["severity-0"] ? 'aria-describedby="severity-error"' : ""}>
           <legend>${esc(t.severityLabel)}</legend>
-          ${e["severity-0"] ? `<p class="error">${esc(e["severity-0"])}</p>` : ""}
+          ${e["severity-0"] ? `<p class="error" id="severity-error"><span class="visually-hidden">Error: </span>${esc(e["severity-0"])}</p>` : ""}
           ${t.severities.map((s, i) => `
             <div class="choice">
               <input type="radio" id="severity-${i}" name="severity" value="${s.value}" aria-describedby="severity-${i}-hint">
