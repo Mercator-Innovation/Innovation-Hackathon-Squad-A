@@ -16,6 +16,7 @@
         <ul class="view-switch">
           <li><button type="button" data-view="tenant" aria-pressed="true">Tenant's phone</button></li>
           <li><button type="button" data-view="office" aria-pressed="false">Cloch head office</button></li>
+          <li><button type="button" data-view="properties" aria-pressed="false">Properties</button></li>
         </ul>
       </nav>
     </div>
@@ -37,6 +38,12 @@
       <h1 id="office-view-title">Homes at risk of damp and mould</h1>
       <div id="office-screen"></div>
     </section>
+
+    <!-- Head office property management: properties.js fills this in -->
+    <section id="properties-view" class="view" aria-labelledby="properties-view-title" hidden>
+      <h1 id="properties-view-title">Properties and tenants</h1>
+      <div id="properties-screen"></div>
+    </section>
   </main>
 
   <footer class="site-footer wrap">
@@ -45,9 +52,11 @@
 
   <script src="content.js"></script>
   <script src="data/homes.js"></script>
+  <script src="data/tenants.js"></script>
   <script src="app.js"></script>
   <script src="tenant.js"></script>
   <script src="office.js"></script>
+  <script src="properties.js"></script>
   <script>App.start();</script>
 </body>
 </html>

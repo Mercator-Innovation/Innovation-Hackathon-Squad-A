@@ -153,3 +153,15 @@ td.why { color: var(--muted); max-width: 22rem; }
 .reasons { list-style: none; padding: 0; margin: 0; }
 .reasons li { padding: 0.3rem 0; border-bottom: 1px solid var(--border); }
 .points { display: inline-block; min-width: 2.5rem; font-weight: 700; }
+
+/* Properties (head office) */
+input[type="text"], input[type="tel"], input[type="number"] {
+  font: inherit; width: 100%; padding: 0.5rem; border: 2px solid var(--text); border-radius: 4px; background: var(--surface);
+}
+input.short { max-width: 8rem; }
+.tag { display: inline-block; padding: 0.1rem 0.5rem; border-radius: 4px; font-size: 0.85rem; font-weight: 700; border: 2px solid currentColor; white-space: nowrap; }
+.tag.in { color: var(--success); }
+.tag.out { color: var(--muted); }
+.button.danger { background: var(--error); border-color: var(--error); }
+.button.danger:hover { background: #8c1d17; border-color: #8c1d17; }
+.danger-zone { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--border); }
