@@ -181,6 +181,7 @@ td.why { color: var(--muted); max-width: 22rem; }
 .law-steps li.overdue .state { color: var(--high); font-weight: 700; }
 .law-steps li.soon .state { color: var(--medium); font-weight: 700; }
 .law-steps li.done .state { color: var(--success); }
+.warning { border-left: 5px solid var(--high); padding: 0.4rem 0.75rem; margin: 0.25rem 0 0.5rem; font-weight: 600; }
 
 /* Properties (head office) */
 input[type="text"], input[type="tel"], input[type="number"] {

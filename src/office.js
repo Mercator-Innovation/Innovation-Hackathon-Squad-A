@@ -4,6 +4,7 @@
 // Awaab's Law (Scotland), in force from 6 October 2026. Maximum times, in working days.
 // Weekends are skipped; bank holidays aren't, so treat the dates as a guide.
 const AWAAB = { investigate: 10, summary: 3, startRepair: 5, finishRepair: 20 };
+const AWAAB_FROM = "2026-10-06"; // reports made before this date aren't covered
 
 // Our own rule, stricter than the law: how soon a housing officer should visit, by risk.
 const VISIT_WITHIN = { high: 2, medium: 5, low: 10 };
@@ -39,6 +40,10 @@ function daysText(template, n) {
 }
 
 const Deadlines = {
+  covered(report) {
+    return report.date >= AWAAB_FROM;
+  },
+
   // Every legal step for a report, with its due date and whether it's done.
   steps(report) {
     const today = todayIso();
@@ -62,7 +67,7 @@ const Deadlines = {
 
   // The soonest step still to do, or null.
   next(report) {
-    if (!report || report.status === "fixed") return null;
+    if (!report || report.status === "fixed" || !this.covered(report)) return null;
     const open = this.steps(report).filter((s) => !s.done).sort((a, b) => a.due.localeCompare(b.due));
     return open[0] || null;
   }
@@ -159,7 +164,7 @@ const Office = {
                     <td class="why">${esc(row.risk.reasons.slice(0, 2).map((r) => r.text).join("; "))}</td>
                     <td>${row.report ? esc(o.statuses[row.report.status]) : `<span class="muted">${esc(o.noStatus)}</span>`}</td>
                     <td>${this.officerOf(row) ? esc(this.officerOf(row)) : `<span class="muted">${esc(o.notAssigned)}</span>`}</td>
-                    <td>${this.deadlineHtml(o, row.next)}</td>
+                    <td>${row.report && !Deadlines.covered(row.report) ? `<span class="muted">${esc(o.notCoveredShort)}</span>` : this.deadlineHtml(o, row.next)}</td>
                     <td><button type="button" class="button small" data-review="${row.home.id}">${esc(o.review)}<span class="visually-hidden"> ${esc(row.home.address)}</span></button></td>
                   </tr>`).join("") : `<tr><td colspan="8">${esc(o.noMatches)}</td></tr>`}
               </tbody>
@@ -244,9 +249,10 @@ const Office = {
           <div class="field ${err ? "has-error" : ""}">
             <label for="visit-date">${esc(o.dateLabel)}</label>
             <p class="hint" id="visit-date-hint">${esc(o.visitRule.replace("{band}", o.bands[risk.band].toLowerCase()).replace("{n}", VISIT_WITHIN[risk.band]).replace("{latest}", formatDate(win.latest)))}</p>
+            ${Deadlines.covered(report) && win.earliest > win.byLaw ? `<p class="warning" id="visit-date-late">${esc(o.lateWarning.replace("{date}", formatDate(win.byLaw)))}</p>` : ""}
             ${err ? `<p class="error" id="visit-date-error"><span class="visually-hidden">Error: </span>${esc(err)}</p>` : ""}
             <input type="date" id="visit-date" required value="${err ? esc(this.dateValue) : win.earliest}" min="${win.earliest}" max="${win.latest}"
-              aria-describedby="visit-date-hint${err ? " visit-date-error" : ""}" ${err ? 'aria-invalid="true"' : ""}>
+              aria-describedby="visit-date-hint${Deadlines.covered(report) && win.earliest > win.byLaw ? " visit-date-late" : ""}${err ? " visit-date-error" : ""}" ${err ? 'aria-invalid="true"' : ""}>
           </div>
           <button type="submit" class="button">${esc(o.assignButton)}</button>
         </form>`;
@@ -289,6 +295,7 @@ const Office = {
   },
 
   lawHtml(o, report) {
+    if (!Deadlines.covered(report)) return `<h3>${esc(o.lawTitle)}</h3><p class="muted">${esc(o.notCovered)}</p>`;
     const steps = Deadlines.steps(report);
     return `
       <h3>${esc(o.lawTitle)}</h3>

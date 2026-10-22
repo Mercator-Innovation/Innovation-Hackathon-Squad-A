@@ -103,6 +103,9 @@ window.CONTENT = {
     },
     lawTitle: "Awaab's Law deadlines",
     stepDone: "Done on {date}",
+    notCoveredShort: "Not covered: reported before 6 Oct",
+    notCovered: "Reported before 6 October 2026, so Awaab's Law deadlines don't apply.",
+    lateWarning: "The legal deadline to investigate was {date}. Book the soonest visit you can, and tell the tenant why it's late and when you'll come.",
     howTitle: "How the ranking works",
     howIntro: "Each thing we know about a home adds points, up to 100. The more points, the higher the risk.",
     // Keep these in step with Risk.score in app.js.
