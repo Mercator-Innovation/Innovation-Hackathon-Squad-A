@@ -8,7 +8,8 @@ Things to improve in the prototype. Pick one, build it, then `/share` it. Put yo
 2. More questions in the report, including:
    - how long the damp or mould has been there
    - what it looks like (black spots, water on windows, peeling or bubbling paint)
-3. Upload photos
+   - also added: turning the heating off because of the cost, and anyone aged 5 or under or over 65. Done (Moji Idowu)
+3. Upload photos: done, up to 3, shown to head office (Moji Idowu)
 
 ## Head office side
 

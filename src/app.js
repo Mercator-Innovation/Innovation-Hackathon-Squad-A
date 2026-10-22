@@ -111,6 +111,11 @@ const Risk = {
     if (report) {
       add(sizes[report.severity], `Tenant reported ${report.severity === "large" ? "a lot of" : "some"} damp or mould`);
       if (open.some((r) => r.health === "yes")) add(15, "Tenant says someone has breathing problems");
+      if (open.some((r) => r.heating === "yes")) add(15, "Tenant turns the heating down or off because of the cost");
+      if (open.some((r) => r.howLong === "longer")) add(5, "Tenant says it's been there more than 6 months");
+      // Only count ages the tenant told us about if we didn't already know, so they don't count twice.
+      if (!home.household.youngChild && open.some((r) => (r.ages || []).includes("under5"))) add(10, "Tenant says a child aged 5 or under lives here");
+      if (!home.household.olderPerson && open.some((r) => (r.ages || []).includes("over65"))) add(10, "Tenant says someone over 65 lives here");
     } else if (home.household.breathingCondition) {
       add(10, "Tenant has told us about breathing problems");
     }

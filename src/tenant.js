@@ -89,6 +89,38 @@ const Tenant = {
             </div>`).join("")}
         </fieldset>
 
+        ${this.radiosHtml("howlong", t.howLongLabel, "", t.howLongOptions)}
+
+        <fieldset class="field" aria-describedby="looks-hint">
+          <legend>${esc(t.looksLabel)}</legend>
+          <p class="hint" id="looks-hint">${esc(t.looksHint)}</p>
+          ${t.looksOptions.map((o, i) => `
+            <div class="choice">
+              <input type="checkbox" id="looks-${i}" name="looks" value="${o.value}">
+              <label for="looks-${i}">${esc(o.label)}</label>
+            </div>`).join("")}
+        </fieldset>
+
+        <div class="field">
+          <label for="photos">${esc(t.photosLabel)}</label>
+          <p class="hint" id="photos-hint">${esc(t.photosHint)}</p>
+          <input type="file" id="photos" name="photos" accept="image/*" multiple aria-describedby="photos-hint photos-status">
+          <p class="hint" id="photos-status" aria-live="polite"></p>
+          <div class="photo-previews"></div>
+        </div>
+
+        ${this.radiosHtml("heating", t.heatingLabel, t.heatingHint, t.heatingOptions)}
+
+        <fieldset class="field" aria-describedby="ages-hint">
+          <legend>${esc(t.agesLabel)}</legend>
+          <p class="hint" id="ages-hint">${esc(t.agesHint)}</p>
+          ${t.agesOptions.map((o, i) => `
+            <div class="choice">
+              <input type="checkbox" id="ages-${i}" name="ages" value="${o.value}">
+              <label for="ages-${i}">${esc(o.label)}</label>
+            </div>`).join("")}
+        </fieldset>
+
         <fieldset class="field">
           <legend>${esc(t.healthLabel)}</legend>
           <p class="hint">${esc(t.healthHint)}</p>
@@ -106,6 +138,48 @@ const Tenant = {
 
         <button type="submit" class="button wide">${esc(t.submit)}</button>
       </form>`;
+  },
+
+  // A set of radio buttons with an optional hint. None are required.
+  radiosHtml(name, label, hint, options) {
+    return `
+        <fieldset class="field" ${hint ? `aria-describedby="${name}-hint"` : ""}>
+          <legend>${esc(label)}</legend>
+          ${hint ? `<p class="hint" id="${name}-hint">${esc(hint)}</p>` : ""}
+          ${options.map((o, i) => `
+            <div class="choice">
+              <input type="radio" id="${name}-${i}" name="${name}" value="${o.value}">
+              <label for="${name}-${i}">${esc(o.label)}</label>
+            </div>`).join("")}
+        </fieldset>`;
+  },
+
+  // Photos are shrunk to small previews so they fit in the browser's storage.
+  // In a real service they'd be uploaded securely to Cloch, not kept on the phone.
+  addPhotos(input) {
+    const t = CONTENT.tenant;
+    const files = Array.from(input.files).slice(0, 3);
+    const shrink = (file) => new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        const scale = Math.min(1, 320 / Math.max(img.width, img.height));
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.round(img.width * scale);
+        canvas.height = Math.round(img.height * scale);
+        canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
+        URL.revokeObjectURL(img.src);
+        resolve(canvas.toDataURL("image/jpeg", 0.6));
+      };
+      img.onerror = () => resolve(null);
+      img.src = URL.createObjectURL(file);
+    });
+    Promise.all(files.map(shrink)).then((photos) => {
+      this.photos = photos.filter(Boolean);
+      const status = document.getElementById("photos-status");
+      const previews = document.querySelector("#tenant-screen .photo-previews");
+      if (status) status.textContent = this.photos.length ? t.photosAdded.replace("{n}", this.photos.length) : "";
+      if (previews) previews.innerHTML = this.photos.map((src, i) => `<img src="${src}" alt="Photo ${i + 1} of the damp or mould">`).join("");
+    });
   },
 
   doneHtml(t) {
@@ -174,6 +248,11 @@ const Tenant = {
     });
 
     const form = el.querySelector("#report-form");
+    const photos = el.querySelector("#photos");
+    if (photos) {
+      this.photos = [];
+      photos.addEventListener("change", () => this.addPhotos(photos));
+    }
     if (form) form.addEventListener("submit", (ev) => {
       ev.preventDefault();
       this.submit(form);
@@ -199,6 +278,9 @@ const Tenant = {
     App.state.reports.push({
       ref, homeId: DATA.you, date: todayIso(), rooms, severity,
       health: data.get("health") || "skip", note: data.get("note") || "",
+      howLong: data.get("howlong") || "", looks: data.getAll("looks"),
+      heating: data.get("heating") || "skip", ages: data.getAll("ages"),
+      photos: this.photos || [],
       status: "received", seen: false
     });
     App.state.promptAnswered = true;
