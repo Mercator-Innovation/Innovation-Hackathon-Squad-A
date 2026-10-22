@@ -36,6 +36,7 @@ ai_use_week_after:
 - 16:45 /find-out on Awaab's Law: Scotland's version started on 6 October 2026, and every report gets the same deadlines whatever its score (investigate in 10 working days, written summary 3 days later, start repairs 5 days later, finish within 20 days of starting)
 - 16:50 Gavin and I built Awaab's Law deadlines at the same time, and we combined them: I undid mine and added my two extras on top of his (reports before 6 October aren't covered, and a warning when a visit is past the deadline). Putting a name on a snag before starting would have avoided it.
 - 17:30 I checked the snag list with Claude: the squad had finished most of round 1 in about an hour, with five people building at once
+- 18:25 dead end: I pasted two style guides from real products and asked Claude to try each as a theme on a test branch, previewing before committing → neither suited the prototype, so we kept the original. It was quick and safe to try: the theme was one extra file, nothing was committed, and main was never touched. Claude also kept the risk colours, focus outline and contrast where the style guides would have broken accessibility.
 
 ## At 19:00
 - What I worked on: <answers>
