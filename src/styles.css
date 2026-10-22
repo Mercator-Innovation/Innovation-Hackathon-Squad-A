@@ -154,6 +154,25 @@ td.why { color: var(--muted); max-width: 22rem; }
 .reasons li { padding: 0.3rem 0; border-bottom: 1px solid var(--border); }
 .points { display: inline-block; min-width: 2.5rem; font-weight: 700; }
 
+.filters { border: 0; padding: 0; margin: 0 0 0.5rem; display: grid; gap: 0 0.75rem; grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr)); }
+.filters legend { font-weight: 700; padding: 0; margin-bottom: 0.5rem; }
+.filters .field { margin-bottom: 0.75rem; }
+.result-count { font-weight: 600; }
+.how-it-works { margin: 0 0 1rem; }
+.how-it-works summary { cursor: pointer; color: var(--brand-dark); text-decoration: underline; font-weight: 600; }
+.how-it-works[open] { border-left: 4px solid var(--brand); padding-left: 0.75rem; }
+.how-it-works[open] summary { margin-bottom: 0.5rem; }
+
+.deadline { display: inline-block; font-size: 0.9rem; }
+.deadline.overdue strong { color: var(--high); }
+.deadline.soon strong { color: var(--medium); }
+.law-steps { padding-left: 1.5rem; margin: 0 0 1rem; }
+.law-steps li { padding: 0.3rem 0; }
+.law-steps .state { color: var(--muted); font-size: 0.95rem; }
+.law-steps li.overdue .state { color: var(--high); font-weight: 700; }
+.law-steps li.soon .state { color: var(--medium); font-weight: 700; }
+.law-steps li.done .state { color: var(--success); }
+
 /* Properties (head office) */
 input[type="text"], input[type="tel"], input[type="number"] {
   font: inherit; width: 100%; padding: 0.5rem; border: 2px solid var(--text); border-radius: 4px; background: var(--surface);
