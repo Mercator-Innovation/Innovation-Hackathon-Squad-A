@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Healthier homes: prototype</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to main content</a>
+
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <p class="product-name" id="product-name"></p>
+      <nav aria-label="Choose a view">
+        <ul class="view-switch">
+          <li><button type="button" data-view="tenant" aria-pressed="true">Tenant's phone</button></li>
+          <li><button type="button" data-view="office" aria-pressed="false">Cloch head office</button></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <p class="prototype-banner wrap" id="prototype-banner"></p>
+
+  <main id="main" class="wrap">
+    <!-- Tenant view: tenant.js fills this in -->
+    <section id="tenant-view" class="view" aria-labelledby="tenant-view-title">
+      <h1 id="tenant-view-title" class="visually-hidden">Tenant's phone</h1>
+      <div class="phone">
+        <div class="phone-screen" id="tenant-screen"></div>
+      </div>
+    </section>
+
+    <!-- Head office view: office.js fills this in -->
+    <section id="office-view" class="view" aria-labelledby="office-view-title" hidden>
+      <h1 id="office-view-title">Homes at risk of damp and mould</h1>
+      <div id="office-screen"></div>
+    </section>
+  </main>
+
+  <footer class="site-footer wrap">
+    <button type="button" class="link-button" id="reset-demo">Reset the demo data</button>
+  </footer>
+
+  <script src="content.js"></script>
+  <script src="data/homes.js"></script>
+  <script src="app.js"></script>
+  <script src="tenant.js"></script>
+  <script src="office.js"></script>
+  <script>App.start();</script>
+</body>
+</html>
