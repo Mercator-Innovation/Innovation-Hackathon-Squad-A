@@ -14,6 +14,11 @@ window.CONTENT = {
     reportButton: "Tell us about damp or mould",
     yourReports: "Your reports",
     noReports: "You haven't told us about any damp or mould yet.",
+    inProgress: "In progress",
+    noInProgress: "Nothing in progress right now.",
+    pastReports: "Past reports",
+    fixedOn: "Fixed on {date}",
+    viewPast: "See what we did",
 
     formTitle: "Tell us about damp or mould",
     roomsLabel: "Where have you seen it?",
