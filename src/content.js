@@ -117,7 +117,7 @@ window.CONTENT = {
     sightHint: "So we can send letters in large print or call instead.",
     sightTip: "This tenant has sight loss. Call them, or send letters in large print.",
     consentNote: "Health information and sight loss are shown only if the tenant chose to tell us.",
-    sensorLabel: "Humidity sensor",
+    sensorLabel: "Sensor, last 14 days",
     noSensor: "No sensor",
     repairsShort: "Damp or mould repairs in the last 2 years",
     riskTitle: "Risk of damp and mould",

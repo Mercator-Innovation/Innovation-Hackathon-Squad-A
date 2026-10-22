@@ -125,7 +125,7 @@ const Properties = {
           <dl class="facts">
             ${row(p.typeLabel, esc(home.type))}
             ${row(p.epcLabel, esc(home.epc))}
-            ${row(p.sensorLabel, home.humidity !== null && home.humidity !== undefined ? `${esc(home.humidity)}% humidity` : `<span class="muted">${esc(p.noSensor)}</span>`)}
+            ${row(p.sensorLabel, home.sensor ? esc(sensorSummary(home.sensor)) : `<span class="muted">${esc(p.noSensor)}</span>`)}
             ${row(p.repairsShort, esc(home.dampRepairs))}
           </dl>
         </section>
@@ -394,7 +394,7 @@ const Properties = {
       const id = nextHomeId();
       App.state.homes.push({
         id, address: v.address, type: v.type, epc: v.epc, dampRepairs: v.dampRepairs,
-        lastContactDays: 0, humidity: null, household, tenant, history: []
+        lastContactDays: 0, sensor: null, household, tenant, history: []
       });
       this.currentId = id;
       this.message = p.added.replace("{address}", v.address);
@@ -510,6 +510,14 @@ function emptyHousehold() {
 function nextHomeId() {
   const highest = App.state.homes.reduce((max, h) => Math.max(max, parseInt(h.id.slice(2), 10) || 0), 100);
   return "H-" + (highest + 1);
+}
+
+// The same sensor wording as the Homes at risk panel (CONTENT.office.sensorText).
+function sensorSummary(sensor) {
+  return CONTENT.office.sensorText
+    .replaceAll("{cold}", sensor.coldDays).replaceAll("{damp}", sensor.dampDays)
+    .replaceAll("{days}", sensor.days).replaceAll("{temp}", sensor.avgTemp)
+    .replaceAll("{humidity}", sensor.avgHumidity);
 }
 
 function shortDate(iso) {
