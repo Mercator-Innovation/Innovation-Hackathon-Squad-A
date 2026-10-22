@@ -289,9 +289,27 @@ const Office = {
           .replaceAll("{humidity}", home.sensor.avgHumidity)) : `<span class="muted">${esc(o.noSensor)}</span>`}</p>
         ${report ? `<h3>${esc(o.reports)}</h3>
           <p>${esc(report.ref)}: ${esc(report.rooms.join(", "))} · ${esc(formatDate(report.date))}${report.note ? `<br>“${esc(report.note)}”` : ""}</p>
+          ${this.answersHtml(report)}
           ${this.lawHtml(o, report)}` : ""}
         ${actions}
       </section>`;
+  },
+
+  // The tenant's answers from the report form, in the tenant's own words. Skipped questions aren't shown.
+  answersHtml(report) {
+    const t = CONTENT.tenant;
+    const pick = (options, values) => options.filter((o) => values.includes(o.value) && o.value !== "skip").map((o) => o.label).join(", ");
+    const rows = [
+      [t.howLongLabel, pick(t.howLongOptions, [report.howLong || ""])],
+      [t.looksLabel, pick(t.looksOptions, report.looks || [])],
+      [t.heatingLabel, pick(t.heatingOptions, [report.heating || ""])],
+      [t.agesLabel, pick(t.agesOptions, report.ages || [])]
+    ].filter(([, answer]) => answer);
+    const photos = report.photos || [];
+    if (!rows.length && !photos.length) return "";
+    return `
+          <dl class="answers">${rows.map(([q, a]) => `<dt>${esc(q)}</dt><dd>${esc(a)}</dd>`).join("")}</dl>
+          ${photos.length ? `<div class="photo-previews">${photos.map((src, i) => `<img src="${src}" alt="Tenant's photo ${i + 1} of the damp or mould">`).join("")}</div>` : ""}`;
   },
 
   lawHtml(o, report) {

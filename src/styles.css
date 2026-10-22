@@ -115,6 +115,12 @@ main { padding-bottom: 2rem; }
 .found-details dd { margin: 0.15rem 0 0; }
 .found-details ul { margin: 0; padding-left: 1.25rem; }
 
+/* Photos the tenant adds to a report */
+.photo-previews { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.5rem; }
+.photo-previews img { width: 96px; height: 96px; object-fit: cover; border-radius: var(--radius); border: 1px solid var(--border); }
+.answers dt { font-weight: 600; margin-top: 0.5rem; }
+.answers dd { margin: 0.1rem 0 0; }
+
 /* Forms */
 .field { border: 0; padding: 0; margin: 0 0 1.25rem; }
 .field legend, .field > label { font-weight: 700; margin-bottom: 0.25rem; display: block; }
@@ -234,3 +240,9 @@ input.short { max-width: 8rem; }
 .form-columns { display: grid; gap: 0 var(--gap); }
 @media (min-width: 600px) { .form-columns { grid-template-columns: 1fr 1fr; } }
 input[type="date"] { max-width: 14rem; }
+
+/* Properties: search box */
+.field.search { max-width: 32rem; }
+input[type="search"] {
+  font: inherit; width: 100%; padding: 0.5rem; border: 2px solid var(--text); border-radius: 4px; background: var(--surface);
+}

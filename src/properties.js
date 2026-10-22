@@ -30,6 +30,9 @@ const Properties = {
   historyDraft: null,
   historyErrors: {},
   message: "",
+  search: "",
+  filters: { town: "all", app: "all", epc: "all", lives: "all" },
+  sort: "address",
 
   render() {
     const p = CONTENT.properties;
@@ -46,14 +49,76 @@ const Properties = {
 
   // ---------- The list ----------
 
+  // The homes that match the search and filters, in the chosen order.
+  matching() {
+    const f = this.filters;
+    const words = this.search.toLowerCase().split(/\s+/).filter(Boolean);
+    const epcGroups = { good: "ABC", middle: "D", poor: "EFG" };
+    const lives = {
+      older: (h) => h.household.olderPerson,
+      child: (h) => h.household.youngChild,
+      breathing: (h) => h.household.breathingCondition === true,
+      sight: (h) => Boolean(h.tenant && h.tenant.sightLoss)
+    };
+    const shown = App.state.homes.filter((h) => {
+      const text = [h.address, h.tenant && h.tenant.name, h.tenant && h.tenant.phone].filter(Boolean).join(" ").toLowerCase();
+      const appState = !h.tenant ? "empty" : h.tenant.appOptIn ? "in" : "out";
+      return words.every((w) => text.includes(w) || text.replace(/\s/g, "").includes(w)) &&
+        (f.town === "all" || townOf(h) === f.town) &&
+        (f.app === "all" || appState === f.app) &&
+        (f.epc === "all" || epcGroups[f.epc].includes(h.epc)) &&
+        (f.lives === "all" || lives[f.lives](h));
+    });
+    if (this.sort === "tenant") {
+      shown.sort((a, b) => (a.tenant ? a.tenant.name : "~").localeCompare(b.tenant ? b.tenant.name : "~"));
+    } else if (this.sort === "latest") {
+      const latest = (h) => (this.timeline(h)[0] || { date: "" }).date;
+      shown.sort((a, b) => latest(b).localeCompare(latest(a)));
+    } else {
+      shown.sort((a, b) => a.address.localeCompare(b.address));
+    }
+    return shown;
+  },
+
+  filtersHtml(p) {
+    const f = this.filters;
+    const o = CONTENT.office;
+    const towns = [...new Set(App.state.homes.map(townOf))].sort();
+    const select = (id, label, value, options) => `
+      <div class="field">
+        <label for="${id}">${esc(label)}</label>
+        <select id="${id}">${options.map(([v, text]) => `<option value="${esc(v)}" ${v === value ? "selected" : ""}>${esc(text)}</option>`).join("")}</select>
+      </div>`;
+    return `
+      <div class="field search">
+        <label for="property-search">${esc(p.searchLabel)}</label>
+        <p class="hint" id="property-search-hint">${esc(p.searchHint)}</p>
+        <input type="search" id="property-search" autocomplete="off" value="${esc(this.search)}" aria-describedby="property-search-hint">
+      </div>
+      <fieldset class="filters">
+        <legend>${esc(o.filtersTitle)}</legend>
+        ${select("prop-filter-town", o.filterTown, f.town, [["all", o.any], ...towns.map((t) => [t, t])])}
+        ${select("prop-filter-app", p.filterApp, f.app, [["all", o.any], ["in", p.optedIn], ["out", p.optedOut], ["empty", p.filterEmpty]])}
+        ${select("prop-filter-epc", p.epcLabel, f.epc, [["all", o.any], ["good", p.epcGood], ["middle", "D"], ["poor", p.epcPoor]])}
+        ${select("prop-filter-lives", p.filterLives, f.lives, [["all", o.any], ["older", p.olderPerson], ["child", p.youngChild], ["breathing", p.breathingShort], ["sight", p.sightShort]])}
+        ${select("prop-sort", o.sortLabel, this.sort, [["address", o.sortAddress], ["tenant", p.sortTenant], ["latest", p.sortLatest]])}
+      </fieldset>`;
+  },
+
   listHtml(p) {
-    const homes = App.state.homes;
+    const all = App.state.homes;
+    const homes = this.matching();
+    const filtered = homes.length < all.length;
     return `
       <p>${esc(p.intro)}</p>
       <p><button type="button" class="button" id="add-property" data-add>${esc(p.addButton)}</button></p>
       <section class="card" aria-labelledby="property-list-title">
-        <h2 id="property-list-title">${homes.length} ${homes.length === 1 ? "property" : "properties"}</h2>
-        <div class="table-scroll" tabindex="0" role="region" aria-labelledby="property-list-title">
+        <h2 id="property-list-title">${all.length} ${all.length === 1 ? "property" : "properties"}</h2>
+        ${this.filtersHtml(p)}
+        <p class="result-count" aria-live="polite">${esc(CONTENT.office.showing.replace("{shown}", homes.length).replace("{total}", all.length))}
+          ${filtered ? `<button type="button" class="link-button" data-clear-filters>${esc(CONTENT.office.clearFilters)}</button>` : ""}</p>
+        ${homes.length ? "" : `<p>${esc(p.noMatches)}</p>`}
+        <div class="table-scroll" tabindex="0" role="region" aria-labelledby="property-list-title" ${homes.length ? "" : "hidden"}>
           <table>
             <thead><tr>
               <th scope="col">${esc(p.cols.home)}</th>
@@ -426,6 +491,39 @@ const Properties = {
     const on = (selector, handler) => el.querySelectorAll(selector).forEach((btn) => btn.addEventListener("click", handler.bind(this, btn)));
 
     on("[data-add]", () => { this.message = ""; this.go("edit", "new"); });
+
+    // Search and filters: redraw the list, then put focus back where it was.
+    const search = el.querySelector("#property-search");
+    if (search) search.addEventListener("input", () => {
+      this.search = search.value;
+      this.message = "";
+      this.render();
+      const box = document.getElementById("property-search");
+      box.focus();
+      box.setSelectionRange(box.value.length, box.value.length);
+    });
+    const filterIds = { "prop-filter-town": "town", "prop-filter-app": "app", "prop-filter-epc": "epc", "prop-filter-lives": "lives" };
+    Object.entries(filterIds).forEach(([id, key]) => {
+      const box = el.querySelector(`#${id}`);
+      if (box) box.addEventListener("change", () => {
+        this.filters[key] = box.value;
+        this.message = "";
+        this.render();
+        document.getElementById(id).focus();
+      });
+    });
+    const sort = el.querySelector("#prop-sort");
+    if (sort) sort.addEventListener("change", () => {
+      this.sort = sort.value;
+      this.render();
+      document.getElementById("prop-sort").focus();
+    });
+    on("[data-clear-filters]", () => {
+      this.search = "";
+      this.filters = { town: "all", app: "all", epc: "all", lives: "all" };
+      this.render();
+      document.getElementById("property-search").focus();
+    });
     on("[data-view-record]", (btn) => { this.message = ""; this.go("record", btn.dataset.viewRecord); });
     on("[data-back]", () => { this.message = ""; this.go("list"); });
     on("[data-edit]", () => { this.message = ""; this.go("edit", home.id); });
@@ -519,6 +617,11 @@ function sensorSummary(sensor) {
     .replaceAll("{cold}", sensor.coldDays).replaceAll("{damp}", sensor.dampDays)
     .replaceAll("{days}", sensor.days).replaceAll("{temp}", sensor.avgTemp)
     .replaceAll("{humidity}", sensor.avgHumidity);
+}
+
+// The town is the last part of the address, as on Homes at risk.
+function townOf(home) {
+  return home.address.split(",").pop().trim();
 }
 
 function shortDate(iso) {
