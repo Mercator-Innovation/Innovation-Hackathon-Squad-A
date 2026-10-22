@@ -1,7 +1,11 @@
-// The tenant's phone: monthly prompt, reporting damp and mould, and progress updates.
+// The tenant's phone: a text message, signing in, the home check, reporting damp and mould, and progress updates.
+
+// The made-up sign-in code shown in the demo's text message.
+const SIGN_IN_CODE = "246810";
 
 const Tenant = {
-  screen: "home", // home | form | done | status | how
+  screen: "home", // sms | signin | home | form | done | status | how
+  photos: [],
   currentRef: null,
   errors: null,
 
@@ -20,7 +24,10 @@ const Tenant = {
     const el = document.getElementById("tenant-screen");
     const t = CONTENT.tenant;
     const home = App.home(DATA.you);
-    if (this.screen === "form") el.innerHTML = this.formHtml(t);
+    if (!App.state.tenantSignedIn && this.screen !== "signin") this.screen = "sms";
+    if (this.screen === "sms") el.innerHTML = this.smsHtml(t, home);
+    else if (this.screen === "signin") el.innerHTML = this.signInHtml(t, home);
+    else if (this.screen === "form") el.innerHTML = this.formHtml(t);
     else if (this.screen === "done") el.innerHTML = this.doneHtml(t);
     else if (this.screen === "status") el.innerHTML = this.statusHtml(t);
     else if (this.screen === "how") el.innerHTML = this.howHtml(t);
@@ -61,10 +68,47 @@ const Tenant = {
       <p class="muted">${esc(home.address)}</p>
       ${this.updatesHtml(t, reports)}
       ${prompt}
-      <button type="button" class="button wide" data-action="form">${esc(t.reportButton)}</button>
       <h3>${esc(t.yourReports)}</h3>
       ${list}
-      <p class="how-link"><button type="button" class="link-button" data-action="how">${esc(t.howLink)}</button></p>`;
+      <p class="how-link"><button type="button" class="link-button" data-action="how">${esc(t.howLink)}</button></p>
+      <p><button type="button" class="link-button" data-action="sign-out">${esc(t.signOut)}</button></p>`;
+  },
+
+  // The text message from Cloch that starts the journey. The link opens the sign-in screen.
+  smsHtml(t, home) {
+    const name = home && home.tenant ? home.tenant.name.split(" ")[0] : "";
+    return `
+      <div class="sms">
+        <p class="sms-app">${esc(t.smsApp)}</p>
+        <h2 tabindex="-1" class="sms-from">${esc(t.smsFrom)}</h2>
+        <p class="sms-time">${esc(t.smsTime)}</p>
+        <div class="sms-bubble">
+          <p>${esc(name ? t.smsText.replace("{name}", name) : t.smsText.replace(" {name}", ""))}</p>
+          <p><a href="#" class="sms-link" data-action="signin">${esc(t.smsLink)}</a></p>
+          <p>${esc(t.smsCode.replace("{code}", SIGN_IN_CODE))}</p>
+        </div>
+        <p class="hint">${esc(t.smsLinkHint)}</p>
+      </div>`;
+  },
+
+  // Signing in with the one-time code from the text. Made up for the demo: no real accounts.
+  signInHtml(t, home) {
+    const phone = home && home.tenant && home.tenant.phone ? home.tenant.phone.replace(/\s/g, "") : "";
+    const err = this.errors && this.errors.code;
+    return `
+      <button type="button" class="link-button back" data-action="sms">${esc(t.backToText)}</button>
+      <h2 tabindex="-1">${esc(t.signInTitle)}</h2>
+      <p>${esc(t.signInIntro.replace("{last}", phone.slice(-3)))}</p>
+      <form id="signin-form" novalidate>
+        <div class="field ${err ? "has-error" : ""}">
+          <label for="code">${esc(t.codeLabel)}</label>
+          <p class="hint" id="code-hint">${esc(t.codeHint)}</p>
+          ${err ? `<p class="error" id="code-error"><span class="visually-hidden">Error: </span>${esc(err)}</p>` : ""}
+          <input type="text" id="code" name="code" class="short" inputmode="numeric" autocomplete="one-time-code" maxlength="6"
+            aria-describedby="code-hint${err ? " code-error" : ""}" ${err ? 'aria-invalid="true"' : ""}>
+        </div>
+        <button type="submit" class="button wide">${esc(t.signInButton)}</button>
+      </form>`;
   },
 
   // Updates from Cloch the tenant hasn't opened yet, like phone notifications.
@@ -152,7 +196,8 @@ const Tenant = {
           <p class="hint" id="photos-hint">${esc(t.photosHint)}</p>
           <input type="file" id="photos" name="photos" accept="image/*" multiple aria-describedby="photos-hint photos-status">
           <p class="hint" id="photos-status" aria-live="polite"></p>
-          <div class="photo-previews"></div>
+          <div class="photo-previews">${this.photosPreviewHtml()}</div>
+          <button type="button" class="link-button" data-photos-clear ${this.photos.length ? "" : "hidden"}>${esc(t.photosClear)}</button>
         </div>
 
         ${this.radiosHtml("heating", t.heatingLabel, t.heatingHint, t.heatingOptions)}
@@ -204,7 +249,7 @@ const Tenant = {
   // In a real service they'd be uploaded securely to Cloch, not kept on the phone.
   addPhotos(input) {
     const t = CONTENT.tenant;
-    const files = Array.from(input.files).slice(0, 3);
+    const files = Array.from(input.files);
     const shrink = (file) => new Promise((resolve) => {
       const img = new Image();
       img.onload = () => {
@@ -220,12 +265,24 @@ const Tenant = {
       img.src = URL.createObjectURL(file);
     });
     Promise.all(files.map(shrink)).then((photos) => {
-      this.photos = photos.filter(Boolean);
-      const status = document.getElementById("photos-status");
-      const previews = document.querySelector("#tenant-screen .photo-previews");
-      if (status) status.textContent = this.photos.length ? t.photosAdded.replace("{n}", this.photos.length) : "";
-      if (previews) previews.innerHTML = this.photos.map((src, i) => `<img src="${src}" alt="Photo ${i + 1} of the damp or mould">`).join("");
+      this.photos = this.photos.concat(photos.filter(Boolean)); // each choice adds to the photos already picked
+      input.value = "";
+      this.showPhotos();
     });
+  },
+
+  photosPreviewHtml() {
+    return this.photos.map((src, i) => `<img src="${src}" alt="Photo ${i + 1} of the damp or mould">`).join("");
+  },
+
+  showPhotos() {
+    const t = CONTENT.tenant;
+    const status = document.getElementById("photos-status");
+    const previews = document.querySelector("#tenant-screen .photo-previews");
+    const clear = document.querySelector("#tenant-screen [data-photos-clear]");
+    if (status) status.textContent = this.photos.length ? t.photosAdded.replace("{n}", this.photos.length) : "";
+    if (previews) previews.innerHTML = this.photosPreviewHtml();
+    if (clear) clear.hidden = !this.photos.length;
   },
 
   doneHtml(t) {
@@ -284,9 +341,11 @@ const Tenant = {
 
   bind(el) {
     el.querySelectorAll("[data-action]").forEach((btn) => {
-      btn.addEventListener("click", () => {
+      btn.addEventListener("click", (ev) => {
+        ev.preventDefault();
         const action = btn.dataset.action;
-        if (action === "prompt-yes") { App.state.promptAnswered = true; this.go("form"); }
+        if (action === "prompt-yes") { App.state.promptAnswered = true; this.photos = []; this.go("form"); }
+        else if (action === "sign-out") { App.state.tenantSignedIn = false; this.screen = "sms"; App.save(); this.go("sms"); }
         else if (action === "prompt-no") { App.state.promptAnswered = true; App.save(); }
         else if (action === "status") this.go("status", btn.dataset.ref);
         else this.go(action);
@@ -295,10 +354,27 @@ const Tenant = {
 
     const form = el.querySelector("#report-form");
     const photos = el.querySelector("#photos");
-    if (photos) {
+    if (photos) photos.addEventListener("change", () => this.addPhotos(photos));
+    const clearPhotos = el.querySelector("[data-photos-clear]");
+    if (clearPhotos) clearPhotos.addEventListener("click", () => {
       this.photos = [];
-      photos.addEventListener("change", () => this.addPhotos(photos));
-    }
+      this.showPhotos();
+      photos.focus();
+    });
+    const signIn = el.querySelector("#signin-form");
+    if (signIn) signIn.addEventListener("submit", (ev) => {
+      ev.preventDefault();
+      const code = signIn.querySelector("#code").value.replace(/\s/g, "");
+      if (code !== SIGN_IN_CODE) {
+        this.errors = { code: CONTENT.tenant.codeError };
+        this.render();
+        document.getElementById("code").focus();
+        return;
+      }
+      App.state.tenantSignedIn = true;
+      App.save();
+      this.go("home");
+    });
     if (form) form.addEventListener("submit", (ev) => {
       ev.preventDefault();
       this.submit(form);
@@ -330,6 +406,7 @@ const Tenant = {
       status: "received", seen: false
     });
     App.state.promptAnswered = true;
+    this.photos = [];
     this.currentRef = ref;
     App.save();
     this.go("done", ref);
