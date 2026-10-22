@@ -47,7 +47,7 @@ window.DATA = {
     { ref: "DM-2040", homeId: "H-104", date: "2026-10-19", rooms: ["Bathroom"], severity: "medium", health: "skip",
       note: "", status: "visit", officer: "Callum Fraser", visitDate: "2026-10-28", seen: true },
     { ref: "DM-1962", homeId: "H-104", date: "2026-03-04", rooms: ["Bedroom"], severity: "small", health: "skip",
-      note: "", status: "fixed", officer: "Ewa Kowalska", visitDate: "2026-03-10", fixedDate: "2026-03-27", seen: true },
+      note: "", status: "fixed", officer: "Ewa Kowalska", visitDate: "2026-03-10", fixedDate: "2026-03-27", seen: true, tenantSeen: "fixed" },
     { ref: "DM-2044", homeId: "H-108", date: "2026-10-21", rooms: ["Living room", "Hall"], severity: "medium", health: "skip",
       note: "", status: "received", seen: false }
   ],

@@ -20,6 +20,40 @@ window.CONTENT = {
     fixedOn: "Fixed on {date}",
     viewPast: "See what we did",
 
+    updatesTitle: "Updates",
+    updateNew: "New",
+    updateFrom: "From Cloch · {ref}",
+    updateMessages: {
+      visit: "Your visit is booked. {officer} will come on {date}.",
+      repair: "We've sent you what we found, and your repair has started.",
+      fixed: "Your repair is done. Tell us if the damp comes back."
+    },
+    updateOpen: "See the update",
+
+    howLink: "How we decide who to visit first",
+    howTitle: "How we decide who to visit first",
+    howIntro: "We want to help before damp and cold make anyone ill. So we look at every home, not just the ones that tell us about a problem.",
+    howLookTitle: "What we look at",
+    howLook: [
+      "Your home: how old it is, how easy it is to keep warm, and any damp repairs we've done before.",
+      "Sensor readings, if your home has a sensor: how warm and how damp it is.",
+      "What you tell us: how bad the damp is, how long it's been there, and if it's hard to pay for heating.",
+      "Who lives with you, only if you choose to tell us: young children, people over 65, or anyone with breathing problems."
+    ],
+    howNextTitle: "What happens next",
+    howNext: [
+      "Homes most at risk get a visit first. We aim to visit within 2 working days if your home is high risk, and within 10 working days for everyone else.",
+      "By law, once you tell us about damp or mould, we must check it within 10 working days.",
+      "A person at Cloch always makes the decision, not a computer."
+    ],
+    howChoicesTitle: "Your choices",
+    howChoices: [
+      "You don't have to tell us about health or who lives with you.",
+      "Saying no won't affect your tenancy or your repairs.",
+      "You won't be blamed for damp or mould.",
+      "You can ask us what we know about your home at any time."
+    ],
+
     formTitle: "Tell us about damp or mould",
     roomsLabel: "Where have you seen it?",
     roomsHint: "Choose all that apply.",
@@ -152,6 +186,9 @@ window.CONTENT = {
       ["15 to 35", "Tenant reported damp or mould (more for a lot of it)"],
       ["+15", "Tenant says someone has breathing problems"],
       ["+10", "Tenant has told us about breathing problems before"],
+      ["+15", "Tenant turns the heating down or off because of the cost"],
+      ["+5", "Tenant says it's been there more than 6 months"],
+      ["+10", "Tenant says a child aged 5 or under, or someone over 65, lives here (if we didn't know)"],
       ["8 to 25", "Energy rating D to G: harder to keep warm"],
       ["8 to 24", "Damp repairs in the last 2 years (8 each)"],
       ["0 to 20", "Sensor shows the home below 18°C (more cold days, more points)"],
