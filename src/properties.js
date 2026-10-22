@@ -1,5 +1,25 @@
 // Cloch head office: manage properties and the tenant in each one.
 // Add, change and delete properties; add or remove tenants; opt tenants in or out of the app.
+// It's a section of the head office view, next to "Homes at risk". OfficeTabs switches between them.
+
+const OfficeTabs = {
+  start() {
+    document.querySelectorAll("[data-office-tab]").forEach((btn) => btn.addEventListener("click", () => {
+      App.state.officeTab = btn.dataset.officeTab;
+      App.save();
+    }));
+  },
+
+  // Show the chosen section. Runs on every redraw, so it stays right after a reload.
+  render() {
+    const tab = App.state.officeTab === "properties" ? "properties" : "risk";
+    document.querySelectorAll("[data-office-tab]").forEach((btn) => {
+      btn.setAttribute("aria-pressed", String(btn.dataset.officeTab === tab));
+    });
+    document.getElementById("office-screen").hidden = tab !== "risk";
+    document.getElementById("properties-screen").hidden = tab !== "properties";
+  }
+};
 
 const Properties = {
   editingId: null, // null: just the list. "new": adding a property. Otherwise the id being changed.
@@ -271,3 +291,5 @@ function nextHomeId() {
 }
 
 App.views.properties = Properties;
+App.views.officeTabs = OfficeTabs;
+OfficeTabs.start();

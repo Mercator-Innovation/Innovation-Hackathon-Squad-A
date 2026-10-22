@@ -64,6 +64,7 @@ const App = {
   },
 
   showView(name) {
+    if (!document.getElementById(`${name}-view`)) name = "tenant"; // a view saved in the demo that no longer exists
     this.state.view = name;
     document.querySelectorAll("[data-view]").forEach((btn) => {
       btn.setAttribute("aria-pressed", String(btn.dataset.view === name));
