@@ -13,14 +13,14 @@ Things to improve in the prototype. Pick one, build it, then `/share` it. Put yo
 ## Head office side
 
 4. Add, view, edit and delete tenants and properties (Nicholas Davey)
-5. Make the assessment follow Awaab's Law (find out what it requires first)
-6. Make the visit times you can book depend on the risk rating (for example, higher-risk homes get earlier visits)
-7. Add an "Assigned to" column to the homes list
-8. Add filtering and sorting to the "Homes by risk" page
+5. Make the assessment follow Awaab's Law (find out what it requires first): done (Gavin Woods)
+6. Make the visit times you can book depend on the risk rating (for example, higher-risk homes get earlier visits): done (Gavin Woods)
+7. Add an "Assigned to" column to the homes list: done (Gavin Woods)
+8. Add filtering and sorting to the "Homes by risk" page: done (Gavin Woods)
 
 Numbers 7 and 8 change the same page, so one person should build them together.
 
 ## Both
 
-9. A page or tab explaining how the assessment works and how the score is worked out
+9. A page or tab explaining how the assessment works and how the score is worked out: head office part done, as "How the ranking works" (Gavin Woods)
 10. Fix accessibility, including the scrolling problem at phone width (Dharmendra Patel: done)

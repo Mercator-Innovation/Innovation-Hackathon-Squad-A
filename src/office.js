@@ -1,17 +1,125 @@
-// Cloch head office: alerts, homes ranked by risk with reasons, and booking visits.
+// Cloch head office: alerts, homes ranked by risk with reasons, filters and sorting,
+// Awaab's Law deadlines, and booking visits.
+
+// Awaab's Law (Scotland), in force from 6 October 2026. Maximum times, in working days.
+// Weekends are skipped; bank holidays aren't, so treat the dates as a guide.
+const AWAAB = { investigate: 10, summary: 3, startRepair: 5, finishRepair: 20 };
+
+// Our own rule, stricter than the law: how soon a housing officer should visit, by risk.
+const VISIT_WITHIN = { high: 2, medium: 5, low: 10 };
+
+function addWorkingDays(iso, days) {
+  const d = new Date(iso + "T12:00:00");
+  let left = days;
+  while (left > 0) {
+    d.setDate(d.getDate() + 1);
+    if (d.getDay() !== 0 && d.getDay() !== 6) left--;
+  }
+  return d.toISOString().slice(0, 10);
+}
+
+// Working days from today to a date: negative if it's passed.
+function workingDaysUntil(iso) {
+  const today = todayIso();
+  if (iso === today) return 0;
+  const forward = iso > today;
+  const d = new Date((forward ? today : iso) + "T12:00:00");
+  const end = forward ? iso : today;
+  let count = 0;
+  while (d.toISOString().slice(0, 10) < end) {
+    d.setDate(d.getDate() + 1);
+    if (d.getDay() !== 0 && d.getDay() !== 6) count++;
+  }
+  return forward ? count : -count;
+}
+
+// "Due in 1 working day" or "Due in 3 working days".
+function daysText(template, n) {
+  return template.replace("{n}", n).replace("{days}", n === 1 ? "day" : "days");
+}
+
+const Deadlines = {
+  // Every legal step for a report, with its due date and whether it's done.
+  steps(report) {
+    const today = todayIso();
+    const visited = report.visitDate && report.visitDate <= today && report.status !== "received";
+    const investigateBy = addWorkingDays(report.date, AWAAB.investigate);
+    const steps = [
+      { key: "investigate", due: investigateBy, done: visited ? report.visitDate : null }
+    ];
+    if (visited) {
+      const repairStarted = report.repairStarted || (report.status === "repair" || report.status === "fixed" ? report.visitDate : null);
+      steps.push(
+        { key: "summary", due: addWorkingDays(report.visitDate, AWAAB.summary), done: report.summarySent || null },
+        { key: "startRepair", due: addWorkingDays(report.visitDate, AWAAB.startRepair), done: repairStarted }
+      );
+      if (repairStarted) {
+        steps.push({ key: "finishRepair", due: addWorkingDays(repairStarted, AWAAB.finishRepair), done: report.status === "fixed" ? (report.fixedDate || today) : null });
+      }
+    }
+    return steps;
+  },
+
+  // The soonest step still to do, or null.
+  next(report) {
+    if (!report || report.status === "fixed") return null;
+    const open = this.steps(report).filter((s) => !s.done).sort((a, b) => a.due.localeCompare(b.due));
+    return open[0] || null;
+  }
+};
 
 const Office = {
-  filter: "all",
+  filters: { risk: "all", status: "all", officer: "all", town: "all" },
+  sort: "risk",
   openHomeId: null,
-  dateError: false,
+  assignError: null,
+  dateValue: null,
+
+  rows() {
+    return App.state.homes
+      .map((home) => {
+        const report = App.openReport(home.id);
+        return { home, risk: Risk.score(home), report, next: Deadlines.next(report) };
+      })
+      .sort((a, b) => b.risk.total - a.risk.total)
+      .map((row, i) => ({ ...row, rank: i + 1 }));
+  },
+
+  statusKey(row) {
+    return row.report ? row.report.status : "none";
+  },
+
+  officerOf(row) {
+    return row.report && row.report.officer && row.report.status !== "received" ? row.report.officer : null;
+  },
+
+  town(home) {
+    return home.address.split(",").pop().trim();
+  },
 
   render() {
     const o = CONTENT.office;
     const el = document.getElementById("office-screen");
-    const ranked = App.state.homes
-      .map((home) => ({ home, risk: Risk.score(home), report: App.openReport(home.id) }))
-      .sort((a, b) => b.risk.total - a.risk.total);
-    const shown = this.filter === "high" ? ranked.filter((r) => r.risk.band === "high") : ranked;
+    const ranked = this.rows();
+    const f = this.filters;
+    const shown = ranked.filter((row) =>
+      (f.risk === "all" || row.risk.band === f.risk) &&
+      (f.status === "all" || this.statusKey(row) === f.status) &&
+      (f.officer === "all" || (f.officer === "none" ? !this.officerOf(row) : this.officerOf(row) === f.officer)) &&
+      (f.town === "all" || this.town(row.home) === f.town)
+    );
+    if (this.sort === "deadline") {
+      shown.sort((a, b) => (a.next ? a.next.due : "9999").localeCompare(b.next ? b.next.due : "9999") || a.rank - b.rank);
+    } else if (this.sort === "address") {
+      shown.sort((a, b) => a.home.address.localeCompare(b.home.address));
+    }
+    const towns = [...new Set(App.state.homes.map((h) => this.town(h)))].sort();
+
+    const select = (id, label, value, options) => `
+      <div class="field">
+        <label for="${id}">${esc(label)}</label>
+        <select id="${id}">${options.map(([v, text]) => `<option value="${esc(v)}" ${v === value ? "selected" : ""}>${esc(text)}</option>`).join("")}</select>
+      </div>`;
 
     el.innerHTML = `
       ${this.alertsHtml(o)}
@@ -19,13 +127,17 @@ const Office = {
         <section class="card" aria-labelledby="list-title">
           <h2 id="list-title">${esc(o.listTitle)}</h2>
           <p class="muted">${esc(o.listIntro)}</p>
-          <div class="field inline">
-            <label for="risk-filter">${esc(o.filterLabel)}</label>
-            <select id="risk-filter">
-              <option value="all" ${this.filter === "all" ? "selected" : ""}>${esc(o.filterAll)}</option>
-              <option value="high" ${this.filter === "high" ? "selected" : ""}>${esc(o.filterHigh)}</option>
-            </select>
-          </div>
+          ${this.howItWorksHtml(o)}
+          <fieldset class="filters">
+            <legend>${esc(o.filtersTitle)}</legend>
+            ${select("filter-risk", o.filterRisk, f.risk, [["all", o.any], ["high", o.bands.high], ["medium", o.bands.medium], ["low", o.bands.low]])}
+            ${select("filter-status", o.filterStatus, f.status, [["all", o.any], ["received", o.statuses.received], ["visit", o.statuses.visit], ["repair", o.statuses.repair], ["none", o.noStatus]])}
+            ${select("filter-officer", o.filterOfficer, f.officer, [["all", o.any], ["none", o.notAssigned], ...DATA.officers.map((n) => [n, n])])}
+            ${select("filter-town", o.filterTown, f.town, [["all", o.any], ...towns.map((t) => [t, t])])}
+            ${select("sort-by", o.sortLabel, this.sort, [["risk", o.sortRisk], ["deadline", o.sortDeadline], ["address", o.sortAddress]])}
+          </fieldset>
+          <p class="result-count" aria-live="polite">${esc(o.showing.replace("{shown}", shown.length).replace("{total}", ranked.length))}
+            ${shown.length < ranked.length ? `<button type="button" class="link-button" data-clear>${esc(o.clearFilters)}</button>` : ""}</p>
           <div class="table-scroll" tabindex="0" role="region" aria-labelledby="list-title">
             <table>
               <thead><tr>
@@ -34,18 +146,22 @@ const Office = {
                 <th scope="col">${esc(o.cols.risk)}</th>
                 <th scope="col">${esc(o.cols.why)}</th>
                 <th scope="col">${esc(o.cols.status)}</th>
+                <th scope="col">${esc(o.cols.assigned)}</th>
+                <th scope="col">${esc(o.cols.deadline)}</th>
                 <th scope="col"><span class="visually-hidden">Actions</span></th>
               </tr></thead>
               <tbody>
-                ${shown.map((row) => `
+                ${shown.length ? shown.map((row) => `
                   <tr class="${row.home.id === this.openHomeId ? "selected" : ""}">
-                    <td>${ranked.indexOf(row) + 1}</td>
+                    <td>${row.rank}</td>
                     <td>${esc(row.home.address)}</td>
                     <td><span class="badge ${row.risk.band}">${esc(o.bands[row.risk.band])}</span> <span class="score">${row.risk.total}</span></td>
                     <td class="why">${esc(row.risk.reasons.slice(0, 2).map((r) => r.text).join("; "))}</td>
-                    <td>${row.report ? esc(CONTENT.tenant.statusSteps[row.report.status]) : `<span class="muted">${esc(o.noStatus)}</span>`}</td>
+                    <td>${row.report ? esc(o.statuses[row.report.status]) : `<span class="muted">${esc(o.noStatus)}</span>`}</td>
+                    <td>${this.officerOf(row) ? esc(this.officerOf(row)) : `<span class="muted">${esc(o.notAssigned)}</span>`}</td>
+                    <td>${this.deadlineHtml(o, row.next)}</td>
                     <td><button type="button" class="button small" data-review="${row.home.id}">${esc(o.review)}<span class="visually-hidden"> ${esc(row.home.address)}</span></button></td>
-                  </tr>`).join("")}
+                  </tr>`).join("") : `<tr><td colspan="8">${esc(o.noMatches)}</td></tr>`}
               </tbody>
             </table>
           </div>
@@ -55,8 +171,29 @@ const Office = {
     this.bind(el);
   },
 
+  // A step's due date, with words (not just colour) saying how close it is.
+  deadlineHtml(o, step) {
+    if (!step) return `<span class="muted">${esc(o.noDeadline)}</span>`;
+    const left = workingDaysUntil(step.due);
+    const when = left < 0 ? daysText(o.overdue, -left) : left === 0 ? o.dueToday : daysText(o.dueIn, left);
+    const level = left < 0 ? "overdue" : left <= 2 ? "soon" : "ok";
+    return `<span class="deadline ${level}"><strong>${esc(when)}</strong><br>${esc(o.steps[step.key])}</span>`;
+  },
+
+  howItWorksHtml(o) {
+    return `
+      <details class="how-it-works">
+        <summary>${esc(o.howTitle)}</summary>
+        <p>${esc(o.howIntro)}</p>
+        <ul class="reasons">${o.howPoints.map(([points, text]) => `<li><span class="points">${esc(points)}</span> ${esc(text)}</li>`).join("")}</ul>
+        <p>${esc(o.howBands)}</p>
+        <p>${esc(o.howVisits)}</p>
+        <p>${esc(o.howLaw)}</p>
+      </details>`;
+  },
+
   alertsHtml(o) {
-    const fresh = App.state.reports.filter((r) => !r.seen);
+    const fresh = App.state.reports.filter((r) => !r.seen && App.home(r.homeId));
     return `
       <section class="card alerts" aria-labelledby="alerts-title">
         <h2 id="alerts-title">${esc(o.alertsTitle)} <span class="count">${fresh.length}</span></h2>
@@ -71,6 +208,15 @@ const Office = {
       </section>`;
   },
 
+  // The window for booking a visit: from the next working day to our risk rule or the legal limit, whichever is sooner.
+  visitWindow(report, band) {
+    const earliest = addWorkingDays(todayIso(), 1);
+    const byRisk = addWorkingDays(todayIso(), VISIT_WITHIN[band]);
+    const byLaw = addWorkingDays(report.date, AWAAB.investigate);
+    const latest = byRisk < byLaw ? byRisk : byLaw;
+    return { earliest, latest: latest < earliest ? earliest : latest, byLaw };
+  },
+
   detailHtml(o) {
     const home = App.home(this.openHomeId);
     const risk = Risk.score(home);
@@ -83,8 +229,11 @@ const Office = {
       hh.breathingCondition === true && "breathing problems (shared by tenant)"
     ].filter(Boolean).join(", ");
 
+    const today = todayIso();
     let actions = "";
     if (report && report.status === "received") {
+      const win = this.visitWindow(report, risk.band);
+      const err = this.assignError;
       actions = `
         <h3>${esc(o.assignTitle)}</h3>
         <form id="assign-form" novalidate>
@@ -92,19 +241,27 @@ const Office = {
             <label for="officer">${esc(o.officerLabel)}</label>
             <select id="officer">${DATA.officers.map((n) => `<option>${esc(n)}</option>`).join("")}</select>
           </div>
-          <div class="field ${this.dateError ? "has-error" : ""}">
+          <div class="field ${err ? "has-error" : ""}">
             <label for="visit-date">${esc(o.dateLabel)}</label>
-            ${this.dateError ? `<p class="error" id="visit-date-error"><span class="visually-hidden">Error: </span>${esc(o.dateError)}</p>` : ""}
-            <input type="date" id="visit-date" required min="${todayIso()}" value="${this.dateError ? esc(this.dateValue) : todayIso(risk.band === "high" ? 1 : 5)}"
-              ${this.dateError ? 'aria-invalid="true" aria-describedby="visit-date-error"' : ""}>
+            <p class="hint" id="visit-date-hint">${esc(o.visitRule.replace("{band}", o.bands[risk.band].toLowerCase()).replace("{n}", VISIT_WITHIN[risk.band]).replace("{latest}", formatDate(win.latest)))}</p>
+            ${err ? `<p class="error" id="visit-date-error"><span class="visually-hidden">Error: </span>${esc(err)}</p>` : ""}
+            <input type="date" id="visit-date" required value="${err ? esc(this.dateValue) : win.earliest}" min="${win.earliest}" max="${win.latest}"
+              aria-describedby="visit-date-hint${err ? " visit-date-error" : ""}" ${err ? 'aria-invalid="true"' : ""}>
           </div>
           <button type="submit" class="button">${esc(o.assignButton)}</button>
         </form>`;
     } else if (report && report.status === "visit") {
+      const visited = report.visitDate <= today;
       actions = `<p>${esc(CONTENT.tenant.visitText.replace("{officer}", report.officer).replace("{date}", formatDate(report.visitDate)))}</p>
-        <button type="button" class="button" data-progress="repair">${esc(o.repairButton)}</button>`;
+        ${visited ? `<div class="button-row">
+          ${report.summarySent ? "" : `<button type="button" class="button secondary" data-summary>${esc(o.summaryButton)}</button>`}
+          <button type="button" class="button" data-progress="repair">${esc(o.repairButton)}</button>
+        </div>` : `<p class="hint">${esc(o.afterVisit)}</p>`}`;
     } else if (report && report.status === "repair") {
-      actions = `<button type="button" class="button" data-progress="fixed">${esc(o.fixedButton)}</button>`;
+      actions = `<div class="button-row">
+        ${report.summarySent ? "" : `<button type="button" class="button secondary" data-summary>${esc(o.summaryButton)}</button>`}
+        <button type="button" class="button" data-progress="fixed">${esc(o.fixedButton)}</button>
+      </div>`;
     }
 
     return `
@@ -125,20 +282,50 @@ const Office = {
           .replaceAll("{days}", home.sensor.days).replaceAll("{temp}", home.sensor.avgTemp)
           .replaceAll("{humidity}", home.sensor.avgHumidity)) : `<span class="muted">${esc(o.noSensor)}</span>`}</p>
         ${report ? `<h3>${esc(o.reports)}</h3>
-          <p>${esc(report.ref)}: ${esc(report.rooms.join(", "))} · ${esc(formatDate(report.date))}${report.note ? `<br>“${esc(report.note)}”` : ""}</p>` : ""}
+          <p>${esc(report.ref)}: ${esc(report.rooms.join(", "))} · ${esc(formatDate(report.date))}${report.note ? `<br>“${esc(report.note)}”` : ""}</p>
+          ${this.lawHtml(o, report)}` : ""}
         ${actions}
       </section>`;
   },
 
+  lawHtml(o, report) {
+    const steps = Deadlines.steps(report);
+    return `
+      <h3>${esc(o.lawTitle)}</h3>
+      <ol class="law-steps">
+        ${steps.map((s) => {
+          const left = workingDaysUntil(s.due);
+          const state = s.done
+            ? o.stepDone.replace("{date}", formatDate(s.done))
+            : left < 0 ? daysText(o.overdue, -left) : left === 0 ? o.dueToday : daysText(o.dueIn, left);
+          const cls = s.done ? "done" : left < 0 ? "overdue" : left <= 2 ? "soon" : "";
+          return `<li class="${cls}"><strong>${esc(o.steps[s.key])}</strong> by ${esc(formatDate(s.due))}<br><span class="state">${esc(state)}</span></li>`;
+        }).join("")}
+      </ol>`;
+  },
+
   bind(el) {
-    el.querySelector("#risk-filter").addEventListener("change", (ev) => {
-      this.filter = ev.target.value;
+    const filterIds = { "filter-risk": "risk", "filter-status": "status", "filter-officer": "officer", "filter-town": "town" };
+    Object.entries(filterIds).forEach(([id, key]) => el.querySelector(`#${id}`).addEventListener("change", (ev) => {
+      this.filters[key] = ev.target.value;
       this.render();
-      document.getElementById("risk-filter").focus();
+      document.getElementById(id).focus();
+    }));
+    el.querySelector("#sort-by").addEventListener("change", (ev) => {
+      this.sort = ev.target.value;
+      this.render();
+      document.getElementById("sort-by").focus();
     });
+    const clear = el.querySelector("[data-clear]");
+    if (clear) clear.addEventListener("click", () => {
+      this.filters = { risk: "all", status: "all", officer: "all", town: "all" };
+      this.render();
+      document.getElementById("filter-risk").focus();
+    });
+
     el.querySelectorAll("[data-review]").forEach((btn) => btn.addEventListener("click", () => {
       this.openHomeId = btn.dataset.review;
-      this.dateError = false;
+      this.assignError = null;
       const report = App.openReport(this.openHomeId);
       if (report) report.seen = true;
       App.save();
@@ -162,23 +349,32 @@ const Office = {
     const assign = el.querySelector("#assign-form");
     if (assign) assign.addEventListener("submit", (ev) => {
       ev.preventDefault();
+      const o = CONTENT.office;
       const date = document.getElementById("visit-date").value;
-      if (!date || date < todayIso()) {
-        this.dateError = true;
+      const win = this.visitWindow(report, Risk.score(App.home(this.openHomeId)).band);
+      if (!date || date < win.earliest || date > win.latest) {
+        this.assignError = o.visitError.replace("{earliest}", formatDate(win.earliest)).replace("{latest}", formatDate(win.latest));
         this.dateValue = date; // keep what they typed, so they can see what was wrong
         this.render();
         document.getElementById("visit-date").focus();
         return;
       }
-      this.dateError = false;
+      this.assignError = null;
       report.status = "visit";
       report.officer = document.getElementById("officer").value;
-      report.visitDate = document.getElementById("visit-date").value;
+      report.visitDate = date;
       App.save();
       document.getElementById("detail-title").focus(); // redrawing loses focus, so keep the person in the panel
     });
+    el.querySelectorAll("[data-summary]").forEach((btn) => btn.addEventListener("click", () => {
+      report.summarySent = todayIso();
+      App.save();
+      document.getElementById("detail-title").focus();
+    }));
     el.querySelectorAll("[data-progress]").forEach((btn) => btn.addEventListener("click", () => {
       report.status = btn.dataset.progress;
+      if (report.status === "repair") report.repairStarted = todayIso();
+      if (report.status === "fixed") report.fixedDate = todayIso();
       App.save();
       document.getElementById("detail-title").focus();
     }));
