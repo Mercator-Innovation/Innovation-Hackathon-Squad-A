@@ -55,8 +55,7 @@ const Properties = {
     const words = this.search.toLowerCase().split(/\s+/).filter(Boolean);
     const epcGroups = { good: "ABC", middle: "D", poor: "EFG" };
     const lives = {
-      older: (h) => h.household.olderPerson,
-      child: (h) => h.household.youngChild,
+      ...Object.fromEntries(CONTENT.properties.ageRanges.map((r) => [r.key, (h) => agesOf(h)[r.key] > 0])),
       breathing: (h) => h.household.breathingCondition === true,
       sight: (h) => Boolean(h.tenant && h.tenant.sightLoss)
     };
@@ -100,7 +99,7 @@ const Properties = {
         ${select("prop-filter-town", o.filterTown, f.town, [["all", o.any], ...towns.map((t) => [t, t])])}
         ${select("prop-filter-app", p.filterApp, f.app, [["all", o.any], ["in", p.optedIn], ["out", p.optedOut], ["empty", p.filterEmpty]])}
         ${select("prop-filter-epc", p.epcLabel, f.epc, [["all", o.any], ["good", p.epcGood], ["middle", "D"], ["poor", p.epcPoor]])}
-        ${select("prop-filter-lives", p.filterLives, f.lives, [["all", o.any], ["older", p.olderPerson], ["child", p.youngChild], ["breathing", p.breathingShort], ["sight", p.sightShort]])}
+        ${select("prop-filter-lives", p.filterLives, f.lives, [["all", o.any], ...p.ageRanges.map((r) => [r.key, p.someoneAged.replace("{range}", r.label)]), ["breathing", p.breathingShort], ["sight", p.sightShort]])}
         ${select("prop-sort", o.sortLabel, this.sort, [["address", o.sortAddress], ["tenant", p.sortTenant], ["latest", p.sortLatest]])}
       </fieldset>`;
   },
@@ -163,7 +162,7 @@ const Properties = {
       row(p.ageLabel, t.age ? esc(t.age) : `<span class="muted">${esc(p.notRecorded)}</span>`),
       row(p.phoneLabel.replace(" (optional)", ""), t.phone ? esc(t.phone) : `<span class="muted">${esc(p.notRecorded)}</span>`),
       row(p.peopleShort, esc(hh.people)),
-      row(p.householdShort, esc([hh.olderPerson && p.olderPerson, hh.youngChild && p.youngChild].filter(Boolean).join(", ") || p.none)),
+      row(p.agesShort, esc(agesText(home))),
       row(p.breathingShort, esc(yesNoUnknown(hh.breathingCondition))),
       row(p.sightShort, esc(yesNoUnknown(t.sightLoss))),
       row(p.appLabel, this.appTag(p, t))
@@ -311,8 +310,8 @@ const Properties = {
   values(home) {
     if (this.draft) return this.draft;
     if (!home) {
-      return { address: "", type: "Flat", epc: "D", dampRepairs: 0, name: "", age: "", phone: "", people: 1,
-        olderPerson: false, youngChild: false, breathing: "unknown", sight: "unknown", app: "out" };
+      return { address: "", type: "Flat", epc: "D", dampRepairs: 0, name: "", age: "", phone: "", ages: {},
+        breathing: "unknown", sight: "unknown", app: "out" };
     }
     const hh = home.household;
     const t = home.tenant;
@@ -320,7 +319,7 @@ const Properties = {
     return {
       address: home.address, type: home.type, epc: home.epc, dampRepairs: home.dampRepairs,
       name: t ? t.name : "", age: t && t.age ? String(t.age) : "", phone: t ? t.phone : "",
-      people: hh.people || 1, olderPerson: hh.olderPerson, youngChild: hh.youngChild,
+      ages: Object.fromEntries(Object.entries(agesOf(home)).map(([k, n]) => [k, n > 0 ? String(n) : ""])),
       breathing: tri(hh.breathingCondition), sight: tri(t ? t.sightLoss : null),
       app: t && t.appOptIn ? "in" : "out"
     };
@@ -385,17 +384,18 @@ const Properties = {
               <label for="prop-phone">${esc(p.phoneLabel)}</label>
               <input type="tel" id="prop-phone" autocomplete="off" value="${esc(v.phone)}">
             </div>
-            <div class="field ${err.people ? "has-error" : ""}">
-              <label for="prop-people">${esc(p.peopleLabel)}</label>
-              ${fieldError("people")}
-              <input type="number" id="prop-people" class="short" min="1" step="1" inputmode="numeric" value="${esc(v.people)}"
-                ${err.people ? `aria-describedby="people-error" aria-invalid="true"` : ""}>
-            </div>
-            <fieldset class="field">
-              <legend>${esc(p.householdLabel)}</legend>
-              <p class="hint">${esc(p.householdHint)}</p>
-              <label class="choice"><input type="checkbox" id="prop-older" ${v.olderPerson ? "checked" : ""}> ${esc(p.olderPerson)}</label>
-              <label class="choice"><input type="checkbox" id="prop-child" ${v.youngChild ? "checked" : ""}> ${esc(p.youngChild)}</label>
+            <fieldset class="field ${err.ages ? "has-error" : ""}" aria-describedby="ages-hint${err.ages ? " ages-error" : ""}">
+              <legend>${esc(p.agesLabel)}</legend>
+              <p class="hint" id="ages-hint">${esc(p.agesHint)}</p>
+              ${fieldError("ages")}
+              <div class="age-grid">
+                ${p.ageRanges.map((r, i) => `
+                  <div class="age-field">
+                    <label for="${i === 0 ? "prop-ages" : `prop-ages-${r.key}`}">${esc(r.label)}</label>
+                    <input type="number" id="${i === 0 ? "prop-ages" : `prop-ages-${r.key}`}" data-age-range="${r.key}" class="short" min="0" step="1" inputmode="numeric"
+                      value="${esc(v.ages[r.key] || "")}" placeholder="0" ${err.ages ? 'aria-invalid="true"' : ""}>
+                  </div>`).join("")}
+              </div>
             </fieldset>
             <fieldset class="field">
               <legend>${esc(p.breathingLabel)}</legend>
@@ -426,9 +426,8 @@ const Properties = {
     return {
       address: val("prop-address"), type: val("prop-type"), epc: val("prop-epc"),
       dampRepairs: Math.max(0, parseInt(val("prop-repairs"), 10) || 0),
-      name: val("prop-name"), age: val("prop-age"), phone: val("prop-phone"), people: val("prop-people"),
-      olderPerson: document.getElementById("prop-older").checked,
-      youngChild: document.getElementById("prop-child").checked,
+      name: val("prop-name"), age: val("prop-age"), phone: val("prop-phone"),
+      ages: Object.fromEntries([...document.querySelectorAll("[data-age-range]")].map((box) => [box.dataset.ageRange, box.value.trim()])),
       breathing: checked("prop-breathing") || "unknown",
       sight: checked("prop-sight") || "unknown",
       app: checked("prop-app") || "out"
@@ -440,7 +439,8 @@ const Properties = {
     const errors = {};
     if (!v.address) errors.address = p.errorAddress;
     if (v.name && v.age && !(/^\d+$/.test(v.age) && Number(v.age) >= 16 && Number(v.age) <= 120)) errors.age = p.errorAge;
-    if (v.name && !(/^\d+$/.test(v.people) && Number(v.people) >= 1)) errors.people = p.errorPeople;
+    const counts = Object.values(v.ages);
+    if (v.name && (counts.some((n) => n && !/^\d+$/.test(n)) || counts.reduce((sum, n) => sum + (Number(n) || 0), 0) < 1)) errors.ages = p.errorAges;
     return errors;
   },
 
@@ -449,7 +449,7 @@ const Properties = {
     const fromTri = (value) => value === "yes" ? true : value === "no" ? false : null;
     const hasTenant = Boolean(v.name);
     const household = hasTenant
-      ? { people: Number(v.people), olderPerson: v.olderPerson, youngChild: v.youngChild, breathingCondition: fromTri(v.breathing) }
+      ? householdFromAges(v.ages, fromTri(v.breathing))
       : emptyHousehold();
     const tenant = hasTenant
       ? { name: v.name, age: v.age ? Number(v.age) : null, sightLoss: fromTri(v.sight), phone: v.phone, appOptIn: v.app === "in" }
@@ -610,7 +610,44 @@ const Properties = {
 };
 
 function emptyHousehold() {
-  return { people: 0, olderPerson: false, youngChild: false, breathingCondition: null };
+  return { people: 0, olderPerson: false, youngChild: false, breathingCondition: null, ages: {} };
+}
+
+// How many people in each age range live in a home. Homes saved before age ranges existed get
+// the made-up ranges from data/tenants.js, or a best guess from the older person / young child flags.
+function agesOf(home) {
+  const hh = home.household;
+  if (!hh.ages) {
+    const fromData = home.tenant && (window.TENANTS[home.id] || {}).householdAges;
+    if (fromData && Object.values(fromData).reduce((a, b) => a + b, 0) === hh.people) hh.ages = { ...fromData };
+    else {
+      const upTo5 = hh.youngChild ? 1 : 0;
+      const older = hh.olderPerson ? 1 : 0;
+      hh.ages = { upTo5, age18to64: Math.max(0, hh.people - upTo5 - older), age65to79: older };
+    }
+  }
+  return hh.ages;
+}
+
+// "1 aged 0 to 5, 2 aged 18 to 64"
+function agesText(home) {
+  const ages = agesOf(home);
+  const parts = CONTENT.properties.ageRanges.filter((r) => ages[r.key] > 0).map((r) => `${ages[r.key]} aged ${r.label}`);
+  return parts.join(", ") || CONTENT.properties.notRecorded;
+}
+
+// The household as the rest of the prototype uses it. The risk score and Homes at risk still read
+// olderPerson (65 or over) and youngChild (5 or under), so we set those from the age ranges.
+function householdFromAges(typed, breathingCondition) {
+  const ages = {};
+  CONTENT.properties.ageRanges.forEach((r) => { const n = Number(typed[r.key]) || 0; if (n > 0) ages[r.key] = n; });
+  return {
+    people: Object.values(ages).reduce((a, b) => a + b, 0),
+    olderPerson: Boolean(ages.age65to79 || ages.age80plus),
+    youngChild: Boolean(ages.upTo5),
+    breathingCondition,
+    ages
+  };
 }
 
 function nextHomeId() {

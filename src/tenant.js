@@ -1,7 +1,7 @@
 // The tenant's phone: monthly prompt, reporting damp and mould, and progress updates.
 
 const Tenant = {
-  screen: "home", // home | form | done | status
+  screen: "home", // home | form | done | status | how
   currentRef: null,
   errors: null,
 
@@ -9,7 +9,9 @@ const Tenant = {
     this.screen = screen;
     this.currentRef = ref || this.currentRef;
     this.errors = null;
-    this.render();
+    const report = screen === "status" && App.state.reports.find((r) => r.ref === this.currentRef);
+    if (report) { report.tenantSeen = report.status; App.save(); } // opening a report clears its update
+    else this.render();
     const heading = document.querySelector("#tenant-screen h2");
     if (heading) heading.focus();
   },
@@ -21,6 +23,7 @@ const Tenant = {
     if (this.screen === "form") el.innerHTML = this.formHtml(t);
     else if (this.screen === "done") el.innerHTML = this.doneHtml(t);
     else if (this.screen === "status") el.innerHTML = this.statusHtml(t);
+    else if (this.screen === "how") el.innerHTML = this.howHtml(t);
     else el.innerHTML = this.homeHtml(t, home);
     this.bind(el);
   },
@@ -37,21 +40,64 @@ const Tenant = {
             <button type="button" class="button secondary" data-action="prompt-no">${esc(t.promptNo)}</button>
           </div>
         </div>`;
+    // Reports still being dealt with go first; fixed ones sit underneath as past reports, newest first.
+    const card = (r, past) => `
+          <li class="card${past ? " past" : ""}">
+            <p class="report-ref">${esc(r.ref)} · ${esc(r.rooms.join(", "))} · ${esc(formatDate(r.date))}</p>
+            <p><strong>${esc(past && r.fixedDate ? t.fixedOn.replace("{date}", formatDate(r.fixedDate)) : t.statusSteps[r.status])}</strong></p>
+            ${!past && r.status === "visit" && r.officer ? `<p class="hint">${esc(t.visitText.replace("{officer}", r.officer).replace("{date}", formatDate(r.visitDate)))}</p>` : ""}
+            <button type="button" class="link-button" data-action="status" data-ref="${esc(r.ref)}">${esc(past ? t.viewPast : t.viewReport)}<span class="visually-hidden"> for ${esc(r.ref)}</span></button>
+          </li>`;
+    const newestFirst = (a, b) => (b.date > a.date ? 1 : -1);
+    const open = reports.filter((r) => r.status !== "fixed").sort(newestFirst);
+    const past = reports.filter((r) => r.status === "fixed").sort(newestFirst);
     const list = reports.length
-      ? `<ul class="report-list">${reports.map((r) => `
-          <li class="card">
-            <p class="report-ref">${esc(r.ref)} · ${esc(formatDate(r.date))}</p>
-            <p><strong>${esc(t.statusSteps[r.status])}</strong></p>
-            <button type="button" class="link-button" data-action="status" data-ref="${esc(r.ref)}">${esc(t.viewReport)}<span class="visually-hidden"> for ${esc(r.ref)}</span></button>
-          </li>`).join("")}</ul>`
+      ? `<h4>${esc(t.inProgress)}</h4>
+        ${open.length ? `<ul class="report-list">${open.map((r) => card(r, false)).join("")}</ul>` : `<p class="muted">${esc(t.noInProgress)}</p>`}
+        ${past.length ? `<h4>${esc(t.pastReports)}</h4><ul class="report-list">${past.map((r) => card(r, true)).join("")}</ul>` : ""}`
       : `<p>${esc(t.noReports)}</p>`;
     return `
       <h2 tabindex="-1">${esc(t.greeting)}</h2>
       <p class="muted">${esc(home.address)}</p>
+      ${this.updatesHtml(t, reports)}
       ${prompt}
       <button type="button" class="button wide" data-action="form">${esc(t.reportButton)}</button>
       <h3>${esc(t.yourReports)}</h3>
-      ${list}`;
+      ${list}
+      <p class="how-link"><button type="button" class="link-button" data-action="how">${esc(t.howLink)}</button></p>`;
+  },
+
+  // Updates from Cloch the tenant hasn't opened yet, like phone notifications.
+  // A report has an update when head office has moved it on since the tenant last looked.
+  updatesHtml(t, reports) {
+    const seenStatus = (r) => r.tenantSeen || (DATA.reports.find((d) => d.ref === r.ref) || {}).tenantSeen || "received";
+    const updates = reports.filter((r) => t.updateMessages[r.status] && seenStatus(r) !== r.status);
+    if (!updates.length) return "";
+    return `
+      <section class="updates" aria-labelledby="updates-title">
+        <h3 id="updates-title">${esc(t.updatesTitle)} <span class="count">${updates.length}</span></h3>
+        <ul class="report-list">${updates.map((r) => `
+          <li class="update">
+            <p class="report-ref"><span class="update-new">${esc(t.updateNew)}</span> ${esc(t.updateFrom.replace("{ref}", r.ref))}</p>
+            <p>${esc(t.updateMessages[r.status].replace("{officer}", r.officer || "").replace("{date}", r.visitDate ? formatDate(r.visitDate) : ""))}</p>
+            <button type="button" class="link-button" data-action="status" data-ref="${esc(r.ref)}">${esc(t.updateOpen)}<span class="visually-hidden"> for ${esc(r.ref)}</span></button>
+          </li>`).join("")}</ul>
+      </section>`;
+  },
+
+  // For tenants: how Cloch decides who to visit first, in plain words. No scores or points.
+  howHtml(t) {
+    const list = (items) => `<ul>${items.map((i) => `<li>${esc(i)}</li>`).join("")}</ul>`;
+    return `
+      <button type="button" class="link-button back" data-action="home">${esc(t.back)}</button>
+      <h2 tabindex="-1">${esc(t.howTitle)}</h2>
+      <p>${esc(t.howIntro)}</p>
+      <h3>${esc(t.howLookTitle)}</h3>
+      ${list(t.howLook)}
+      <h3>${esc(t.howNextTitle)}</h3>
+      ${list(t.howNext)}
+      <h3>${esc(t.howChoicesTitle)}</h3>
+      ${list(t.howChoices)}`;
   },
 
   formHtml(t) {
