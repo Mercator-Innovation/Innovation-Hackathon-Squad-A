@@ -29,6 +29,11 @@ ai_use_week_after:
 
 ## During
 <!-- Claude adds one line per moment: prompts that worked (word for word), dead ends, surprises, things done outside my usual job, what made working as a squad easier or harder -->
+- 18:17 I identified and fixed accessibility issues from a QA perspective.
+- 18:17 I found and helped resolve a date-related bug in the Healthier Homes app (Book visit allowed an empty or past date).
+- 18:17 surprise: Claude fixed the UI layout issue (sideways scroll at phone width) in one go.
+- 18:17 I tested the app using keyboard navigation to check accessibility, normally outside my usual testing activities.
+- 18:17 Combining AI-assisted development with hands-on QA testing helped improve accessibility, usability and overall quality.
 
 ## At 19:00
 - What I worked on: <answers>

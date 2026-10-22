@@ -118,7 +118,7 @@ const Properties = {
       <p>${esc(p.intro)}</p>
       <p><button type="button" class="button" id="add-property" data-add>${esc(p.addButton)}</button></p>
       <section class="card" aria-labelledby="property-list-title">
-        <h2 id="property-list-title">${all.length} ${all.length === 1 ? "property" : "properties"}</h2>
+        <h2 id="property-list-title" tabindex="-1">${all.length} ${all.length === 1 ? "property" : "properties"}</h2>
         ${this.filtersHtml(p)}
         <p class="result-count" aria-live="polite">${esc(CONTENT.office.showing.replace("{shown}", homes.length).replace("{total}", all.length))}
           ${filtered ? `<button type="button" class="link-button" data-clear-filters>${esc(CONTENT.office.clearFilters)}</button>` : ""}</p>
@@ -180,7 +180,7 @@ const Properties = {
     const repairs = events.filter((e) => e.type === "repair").length;
 
     return `
-      <p><button type="button" class="link-button" data-back>‹ ${esc(p.back)}</button></p>
+      <p><button type="button" class="link-button" data-back><span aria-hidden="true">‹ </span>${esc(p.back)}</button></p>
       <div class="record-head">
         <h2 id="record-title" tabindex="-1">${esc(home.address)}</h2>
         <div class="button-row">
@@ -350,7 +350,7 @@ const Properties = {
       <label class="choice"><input type="radio" name="${name}" value="${o.value}" ${o.value === current ? "checked" : ""}> ${esc(o.label)}</label>`).join("");
 
     return `
-      <p><button type="button" class="link-button" data-cancel>‹ ${esc(home ? p.backToRecord : p.back)}</button></p>
+      <p><button type="button" class="link-button" data-cancel><span aria-hidden="true">‹ </span>${esc(home ? p.backToRecord : p.back)}</button></p>
       <h2 id="property-form-title" tabindex="-1">${esc(home ? `${p.editTitle}: ${home.address}` : p.addTitle)}</h2>
       ${errorList.length ? `
         <div class="error-summary" role="alert" tabindex="-1" id="property-errors">
@@ -541,7 +541,14 @@ const Properties = {
       document.getElementById("property-search").focus();
     });
     on("[data-view-record]", (btn) => { this.message = ""; this.go("record", btn.dataset.viewRecord); });
-    on("[data-back]", () => { this.message = ""; this.go("list"); });
+    on("[data-back]", () => {
+      const from = this.currentId;
+      this.message = "";
+      this.go("list");
+      // Put keyboard focus back on the View button the person came from.
+      const back = document.querySelector(`#properties-screen [data-view-record="${from}"]`);
+      if (back) back.focus();
+    });
     on("[data-edit]", () => { this.message = ""; this.go("edit", home.id); });
     on("[data-cancel]", () => {
       this.message = "";
