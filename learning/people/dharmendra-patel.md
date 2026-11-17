@@ -9,15 +9,21 @@ ai_use_before: 3
 hopes: [build-fast]
 feeling: excited
 # At 19:00
-worked_on: []
-outside_usual_job:
-got_in_way: []
-ai_use_after:
+worked_on: [other]
+outside_usual_job: a-bit
+got_in_way: [sharing]
+ai_use_after: 2
+enjoyed: enjoyed
+pace: right
+worked_best: [building]
+again: definitely
 # In the week after
-specialist:
-helped_squad: []
-idea_where: []
-ai_use_week_after:
+specialist: often
+helped_squad: [screen, explaining]
+idea_where: [my-team]
+ai_use_week_after: 2
+# Three-week check-in
+idea_tried: planned
 ---
 
 # Dharmendra Patel: learning log
@@ -36,17 +42,23 @@ ai_use_week_after:
 - 18:17 Combining AI-assisted development with hands-on QA testing helped improve accessibility, usability and overall quality.
 
 ## At 19:00
-- What I worked on: <answers>
-- How much of it was outside my usual job: <answer>
-- What got in the way: <answers>
-- How much I'd use AI tools in my work now: <answer>
+- What I worked on: QA Part
+- How much of it was outside my usual job: A bit
+- What got in the way: Sharing or git
+- How much I'd use AI tools in my work now: Now and then
+- How much I enjoyed the hackathon: Enjoyed it
+- The pace of the afternoon: About right
+- What worked best for me: Building with Claude
+- Would I take part in another: Definitely
+- One thing to change next time: Nothing
 
 ## In the week after
-- Did I still need a human specialist: <answer>, for <what>
-- What helped most when building as a squad: <answers>
-- The most useful thing I learned: <in my words>
-- **One idea to carry forward:** <in my words>, and where it could fit: <answers>
-- How much I expect to use AI tools from now on: <answer>
+- Did I still need a human specialist: Often, for To make sure go each commit smoothly
+- What helped most when building as a squad: The shared screen; Claude explaining what it did
+- The most useful thing I learned: It create whole app without programming code from user, Just give a prompt and relax
+- **One idea to carry forward:** Strong collaboration, and where it could fit: My team
+- How much I expect to use AI tools from now on: Now and then
 
-## Three-week check-in (around 12 Nov)
-- Did I try, share or suggest my idea anywhere? What happened, or what got in the way?
+## Three-week check-in
+- Have I tried, shared or suggested my idea: Not yet, but I plan to
+- What happened, or what got in the way: Nothing
