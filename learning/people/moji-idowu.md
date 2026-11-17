@@ -22,6 +22,8 @@ specialist: rarely
 helped_squad: [screen, explaining, small-shares, talking]
 idea_where: [bid, my-team, client]
 ai_use_week_after: 4
+# Three-week check-in
+idea_tried: shared
 ---
 
 # Moji Idowu: learning log
@@ -90,11 +92,12 @@ The same flow as a list:
 - One thing to change next time: It was such a great day, Maybe the hackathon being an entire afternoon, so that the presentation afterwards can be a bit longer.
 
 ## In the week after
-- Did I still need a human specialist: Rarely, for <what>
+- Did I still need a human specialist: Rarely, for Oh yes, on the conflict management and resolution
 - What helped most when building as a squad: The shared screen; Claude explaining what it did; Small, frequent shares; Talking it through first
 - The most useful thing I learned: I was definitely scared but amazed with Claude outputs, Claude rarely got it wrong, instead it thinks out of the box and offers solutions for improvements. We had a snag list and it kept referring us back to it. The most useful thing i learnt is that claude can help with conflicts, especially when everyone in the team is updating a the same time, it keeps a log of it which i found impressive
-- **One idea to carry forward:** <in my words>, and where it could fit: A bid; My team; Client work where the tools are permitted
+- **One idea to carry forward:** I would like to carry the conflict resolution aspect. Especially the way git handled the different pushes, and where it could fit: A bid; My team; Client work where the tools are permitted
 - How much I expect to use AI tools from now on: Every day
 
-## Three-week check-in (around 12 Nov)
-- Did I try, share or suggest my idea anywhere? What happened, or what got in the way?
+## Three-week check-in
+- Have I tried, shared or suggested my idea: Yes, I've shared or suggested it
+- What happened, or what got in the way: We played around with Claude, in our SDN academy group assignment. We used it to rapidly create a food meal kit box ordering website. we listed our features, specifications and requirements we needed.
