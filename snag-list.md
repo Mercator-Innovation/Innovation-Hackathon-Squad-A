@@ -31,10 +31,10 @@ Numbers 7 and 8 change the same page, so one person should build them together.
 11. Header: change "Healthier homes" to "Return of the Hacks"
 12. Tenants: start the journey from a text message with a link
 13. Tenants: add a sign-in screen
-14. Tenants: remove the "Tell us about damp or mould" button
-15. Tenants: remove the word "monthly"
-16. Tenants: no limit on photo uploads
-17. Tenants: be consistent about which questions are optional
+14. Tenants: remove the "Tell us about damp or mould" button: done (Gavin Woods)
+15. Tenants: remove the word "monthly": done (Gavin Woods)
+16. Tenants: no limit on photo uploads: done (Gavin Woods)
+17. Tenants: be consistent about which questions are optional: done (Gavin Woods)
 18. Demo controls: switch the tenant between no reports and several reports
 
 ## Round 3 (Gavin Woods)
