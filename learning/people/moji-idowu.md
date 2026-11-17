@@ -9,15 +9,19 @@ ai_use_before: 3
 hopes: [see-claude, build-fast, other-jobs]
 feeling: excited
 # At 19:00
-worked_on: []
-outside_usual_job:
-got_in_way: []
-ai_use_after:
+worked_on: [code, content, research]
+outside_usual_job: a-bit
+got_in_way: [claude-wrong, squad]
+ai_use_after: 4
+enjoyed: loved
+pace: right
+worked_best: [building, mixed-squad, setup]
+again: definitely
 # In the week after
-specialist:
-helped_squad: []
-idea_where: []
-ai_use_week_after:
+specialist: rarely
+helped_squad: [screen, explaining, small-shares, talking]
+idea_where: [bid, my-team, client]
+ai_use_week_after: 4
 ---
 
 # Moji Idowu: learning log
@@ -75,17 +79,22 @@ The same flow as a list:
 **Still open:** round 2 snags 14 to 17 on the tenant side.
 
 ## At 19:00
-- What I worked on: <answers>
-- How much of it was outside my usual job: <answer>
-- What got in the way: <answers>
-- How much I'd use AI tools in my work now: <answer>
+- What I worked on: Code or features; The words people see; Research or finding things out
+- How much of it was outside my usual job: A bit
+- What got in the way: Claude getting things wrong; Working as a squad (clashes, waiting)
+- How much I'd use AI tools in my work now: Every day
+- How much I enjoyed the hackathon: Loved it
+- The pace of the afternoon: About right
+- What worked best for me: Building with Claude; Working in a mixed squad; The setup before the day
+- Would I take part in another: Definitely
+- One thing to change next time: It was such a great day, Maybe the hackathon being an entire afternoon, so that the presentation afterwards can be a bit longer.
 
 ## In the week after
-- Did I still need a human specialist: <answer>, for <what>
-- What helped most when building as a squad: <answers>
-- The most useful thing I learned: <in my words>
-- **One idea to carry forward:** <in my words>, and where it could fit: <answers>
-- How much I expect to use AI tools from now on: <answer>
+- Did I still need a human specialist: Rarely, for <what>
+- What helped most when building as a squad: The shared screen; Claude explaining what it did; Small, frequent shares; Talking it through first
+- The most useful thing I learned: I was definitely scared but amazed with Claude outputs, Claude rarely got it wrong, instead it thinks out of the box and offers solutions for improvements. We had a snag list and it kept referring us back to it. The most useful thing i learnt is that claude can help with conflicts, especially when everyone in the team is updating a the same time, it keeps a log of it which i found impressive
+- **One idea to carry forward:** <in my words>, and where it could fit: A bid; My team; Client work where the tools are permitted
+- How much I expect to use AI tools from now on: Every day
 
 ## Three-week check-in (around 12 Nov)
 - Did I try, share or suggest my idea anywhere? What happened, or what got in the way?
