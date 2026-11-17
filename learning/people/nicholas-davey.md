@@ -9,7 +9,7 @@ ai_use_before: 2
 hopes: [see-claude, build-fast, other-jobs]
 feeling: curious
 # At 19:00
-worked_on: [design]
+worked_on: [code, design]
 outside_usual_job: a-lot
 got_in_way: [time]
 ai_use_after: 2
@@ -54,7 +54,7 @@ idea_tried: shared
 - 18:20 I built property management, property records, search and filters, and a housing officer view, normally a developer's job: I described what I wanted in plain words, and Claude did the building, testing and git.
 
 ## At 19:00
-- What I worked on: The design or the look
+- What I worked on: Code or features; The design or the look
 - How much of it was outside my usual job: A lot
 - What got in the way: Not enough time
 - How much I'd use AI tools in my work now: Now and then
