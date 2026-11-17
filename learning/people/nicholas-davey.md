@@ -9,15 +9,21 @@ ai_use_before: 2
 hopes: [see-claude, build-fast, other-jobs]
 feeling: curious
 # At 19:00
-worked_on: []
-outside_usual_job:
-got_in_way: []
-ai_use_after:
+worked_on: [design]
+outside_usual_job: a-lot
+got_in_way: [time]
+ai_use_after: 2
+enjoyed: loved
+pace: right
+worked_best: [building, mixed-squad]
+again: definitely
 # In the week after
-specialist:
-helped_squad: []
-idea_where: []
-ai_use_week_after:
+specialist: sometimes
+helped_squad: [screen, small-shares, talking]
+idea_where: [internal, client]
+ai_use_week_after: 3
+# Three-week check-in
+idea_tried: shared
 ---
 
 # Nicholas Davey: learning log
@@ -48,17 +54,23 @@ ai_use_week_after:
 - 18:20 I built property management, property records, search and filters, and a housing officer view, normally a developer's job: I described what I wanted in plain words, and Claude did the building, testing and git.
 
 ## At 19:00
-- What I worked on: <answers>
-- How much of it was outside my usual job: <answer>
-- What got in the way: <answers>
-- How much I'd use AI tools in my work now: <answer>
+- What I worked on: The design or the look
+- How much of it was outside my usual job: A lot
+- What got in the way: Not enough time
+- How much I'd use AI tools in my work now: Now and then
+- How much I enjoyed the hackathon: Loved it
+- The pace of the afternoon: About right
+- What worked best for me: Building with Claude; Working in a mixed squad
+- Would I take part in another: Definitely
+- One thing to change next time: I think more time for demos would be fun to see exactly what everyone has made.
 
 ## In the week after
-- Did I still need a human specialist: <answer>, for <what>
-- What helped most when building as a squad: <answers>
-- The most useful thing I learned: <in my words>
-- **One idea to carry forward:** <in my words>, and where it could fit: <answers>
-- How much I expect to use AI tools from now on: <answer>
+- Did I still need a human specialist: Sometimes, for As BAs we need to understand best practices of other more specialised roles, often this entails speaking to these roles to understand what is 'good' vs 'bad' so we can better evaluate requirements & outputs.
+- What helped most when building as a squad: The shared screen; Small, frequent shares; Talking it through first
+- The most useful thing I learned: Just how powerful the tooling is.
+- **One idea to carry forward:** Potentially use in ticket creation, or for ideating prototypes, and where it could fit: Internal work; Client work where the tools are permitted
+- How much I expect to use AI tools from now on: Most weeks
 
-## Three-week check-in (around 12 Nov)
-- Did I try, share or suggest my idea anywhere? What happened, or what got in the way?
+## Three-week check-in
+- Have I tried, shared or suggested my idea: Yes, I've shared or suggested it
+- What happened, or what got in the way: Its still under review if it can be used on the project I want to use it on.
