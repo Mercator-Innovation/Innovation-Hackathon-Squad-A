@@ -9,15 +9,21 @@ ai_use_before: 3
 hopes: [see-claude, build-fast, other-jobs]
 feeling: excited
 # At 19:00
-worked_on: []
-outside_usual_job:
-got_in_way: []
-ai_use_after:
+worked_on: [code, design, content]
+outside_usual_job: a-lot
+got_in_way: [time]
+ai_use_after: 4
+enjoyed: loved
+pace: right
+worked_best: [building]
+again: definitely
 # In the week after
-specialist:
-helped_squad: []
-idea_where: []
-ai_use_week_after:
+specialist: often
+helped_squad: [explaining, talking]
+idea_where: [internal, bid, my-team, client]
+ai_use_week_after: 4
+# Three-week check-in
+idea_tried: tried
 ---
 
 # Gavin Woods: learning log
@@ -41,17 +47,23 @@ ai_use_week_after:
 - What made it work: giving Claude a short snag list and letting it build, test in the browser and share each round in one go.
 
 ## At 19:00
-- What I worked on: <answers>
-- How much of it was outside my usual job: <answer>
-- What got in the way: <answers>
-- How much I'd use AI tools in my work now: <answer>
+- What I worked on: Code or features; The design or the look; The words people see
+- How much of it was outside my usual job: A lot
+- What got in the way: Not enough time
+- How much I'd use AI tools in my work now: Every day
+- How much I enjoyed the hackathon: Loved it
+- The pace of the afternoon: About right
+- What worked best for me: Building with Claude
+- Would I take part in another: Definitely
+- One thing to change next time: Pace the info prior to the day.  Sometimes felt there was a lot to digest in one comms or day.
 
 ## In the week after
-- Did I still need a human specialist: <answer>, for <what>
-- What helped most when building as a squad: <answers>
-- The most useful thing I learned: <in my words>
-- **One idea to carry forward:** <in my words>, and where it could fit: <answers>
-- How much I expect to use AI tools from now on: <answer>
+- Did I still need a human specialist: Often, for Everything, apart from the build.  The design and wording was great for a quick, first pass.  But it was a long way away from what you'd release to the public.
+- What helped most when building as a squad: Claude explaining what it did; Talking it through first
+- The most useful thing I learned: The additional things I can use Claude for, like building a site/product - and just how straightforward it is.
+- **One idea to carry forward:** Asking Claude for how to get it to do what I want., and where it could fit: Internal work; A bid; My team; Client work where the tools are permitted
+- How much I expect to use AI tools from now on: Every day
 
-## Three-week check-in (around 12 Nov)
-- Did I try, share or suggest my idea anywhere? What happened, or what got in the way?
+## Three-week check-in
+- Have I tried, shared or suggested my idea: Yes, I've tried it
+- What happened, or what got in the way: It's useful for many internal things.  Also, really helpful to build a prototype for some recent training.
